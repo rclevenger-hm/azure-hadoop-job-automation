@@ -12,3 +12,17 @@ An asynchronous, authenticated control plane for **Hadoop JAR / MapReduce jobs o
 
 The Terraform provisions the control plane. You supply an existing Hadoop-capable HDInsight cluster, its storage and networking, and an Entra API registration. No cloud resources are deployed by CI.
 
+## Quick start
+
+```bash
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install --require-hashes -r requirements-dev.txt
+python -m pytest
+ruff check app tests scripts function_app.py
+python scripts/check_contract.py
+python scripts/build.py
+```
+
+Follow [deployment](docs/DEPLOYMENT.md) for Azure prerequisites, private runner access, Terraform and package publishing. The [API guide](docs/API.md) and [OpenAPI contract](openapi.yaml) describe requests and responses.
+
