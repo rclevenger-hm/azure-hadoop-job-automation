@@ -26,3 +26,26 @@ python scripts/build.py
 
 Follow [deployment](docs/DEPLOYMENT.md) for Azure prerequisites, private runner access, Terraform and package publishing. The [API guide](docs/API.md) and [OpenAPI contract](openapi.yaml) describe requests and responses.
 
+## Submit a job
+
+Use a version 2 Microsoft Entra access token with the API application's client ID as its audience. Each caller's immutable object ID must be authorized by the selected profile.
+
+```bash
+python scripts/client.py --url https://YOUR-APP.azurewebsites.net \
+  --scope api://YOUR-API-CLIENT-ID/.default submit examples/job.json \
+  --key unique-request-001
+```
+
+```json
+{
+  "profile": "analytics",
+  "jar_path": "abfss://jobs@yourstorage.dfs.core.windows.net/jars/wordcount.jar",
+  "job_class": "com.example.WordCount",
+  "input_path": "abfss://jobs@yourstorage.dfs.core.windows.net/input/words.txt",
+  "output_path": "abfss://jobs@yourstorage.dfs.core.windows.net/output/unique-run-001",
+  "arguments": []
+}
+```
+
+The API returns `202` and a stable job ID. Replaying the same key and inputs returns `200` without charging quota again. Query `GET /jobs/{job_id}`, `GET /jobs`, `GET /usage`, or `GET /jobs/{job_id}/logs`; cancel with `POST /jobs/{job_id}/cancel`.
+
