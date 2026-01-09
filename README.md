@@ -49,3 +49,9 @@ python scripts/client.py --url https://YOUR-APP.azurewebsites.net \
 
 The API returns `202` and a stable job ID. Replaying the same key and inputs returns `200` without charging quota again. Query `GET /jobs/{job_id}`, `GET /jobs`, `GET /usage`, or `GET /jobs/{job_id}/logs`; cancel with `POST /jobs/{job_id}/cancel`.
 
+## Execution guarantees
+
+The worker commits `SUBMITTING` before one non-retrying HTTPS submission. It records a random, durable status directory and verifies the remote job's owner, JAR, class, complete argument vector and status directory during recovery and polling. A crash before the POST can therefore leave an unstarted job in review: avoiding duplicate execution takes priority over automatic progress when the outcome cannot be proven.
+
+`NEEDS_REVIEW` requires an operator decision. It never proves that a remote job stopped. Cancellation acknowledgment is not terminal cancellation, and a successful WebHCat launcher is not success until its child process exit value is available. Applications must design their own idempotent output writes.
+
