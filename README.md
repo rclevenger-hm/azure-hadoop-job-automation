@@ -55,3 +55,13 @@ The worker commits `SUBMITTING` before one non-retrying HTTPS submission. It rec
 
 `NEEDS_REVIEW` requires an operator decision. It never proves that a remote job stopped. Cancellation acknowledgment is not terminal cancellation, and a successful WebHCat launcher is not success until its child process exit value is available. Applications must design their own idempotent output writes.
 
+## Documentation
+
+- [Architecture and invariants](docs/ARCHITECTURE.md)
+- [Parity with OCI, AWS and GCP](docs/PARITY.md)
+- [Security boundaries](docs/SECURITY.md)
+- [Operations and recovery](docs/OPERATIONS.md)
+- [Validation and limits](docs/VALIDATION.md)
+- [Cost controls](docs/COSTS.md)
+
+Commit-date provenance is documented in [NOTICE](NOTICE). Licensed under [MIT](LICENSE).
