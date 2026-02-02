@@ -19,3 +19,29 @@ def prefix(value, azure_only=False):
     elif azure_only or uri.scheme != 'hdfs' or uri.netloc not in {'', 'namenode'}:
         raise ValueError('Use abfss, wasbs or hdfs:/// paths')
     return value
+
+
+def load_profiles(raw):
+    profiles = json.loads(raw)
+    if not isinstance(profiles, dict) or not 1 <= len(profiles) <= 5 or len(raw.encode()) > 16000:
+        raise ValueError('Configure one to five profiles within 16 KiB')
+    for name, p in profiles.items():
+        if not re.fullmatch(r'[a-z][a-z0-9-]{2,39}', name) or not isinstance(p, dict):
+            raise ValueError('Invalid cluster profile')
+        if not re.fullmatch(r'[a-z][a-z0-9-]{1,57}[a-z0-9]', p.get('cluster_name', '')):
+            raise ValueError('Invalid HDInsight cluster name')
+        if not re.fullmatch(r'[a-zA-Z0-9_-]{1,64}', p.get('username', '')):
+            raise ValueError('Invalid HDInsight user')
+        if not re.fullmatch(r'https://[a-zA-Z0-9-]{3,24}\.vault\.azure\.net/secrets/[a-zA-Z0-9-]{1,127}/[0-9a-f]{32}', p.get('secret_id', '')):
+            raise ValueError('Use a version-pinned Key Vault secret ID')
+        callers = p.get('allowed_callers', [])
+        if not isinstance(callers, list) or not callers or any(not isinstance(a, str) or not re.fullmatch(GUID, a) for a in callers):
+            raise ValueError('Use explicit Entra object IDs')
+        for field in ['jar_prefixes', 'input_prefixes', 'output_prefixes']:
+            values = p.get(field, [])
+            if not isinstance(values, list) or not values:
+                raise ValueError(f'Missing {field}')
+            for value in values:
+                prefix(value)
+        prefix(p.get('status_prefix'), azure_only=True)
+    return profiles
