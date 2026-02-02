@@ -45,3 +45,14 @@ def load_profiles(raw):
                 prefix(value)
         prefix(p.get('status_prefix'), azure_only=True)
     return profiles
+
+
+def settings():
+    return {
+        'profiles': load_profiles(os.environ['CLUSTER_PROFILES']),
+        'endpoint': os.environ['COSMOS_ENDPOINT'], 'database': os.environ.get('COSMOS_DATABASE', 'hadoop'),
+        'container': os.environ.get('COSMOS_CONTAINER', 'items'), 'queue_url': os.environ['JOB_QUEUE_URL'],
+        'daily_limit': int(os.environ.get('DAILY_JOB_LIMIT', '100')),
+        'rate_limit': int(os.environ.get('REQUESTS_PER_MINUTE', '60')),
+        'retention': int(os.environ.get('RETENTION_DAYS', '30')),
+    }
