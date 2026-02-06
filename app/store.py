@@ -22,3 +22,9 @@ class Store:
 
     def date(self):
         return datetime.fromtimestamp(self.now(), timezone.utc).strftime('%Y-%m-%d')
+
+    def read(self, tenant, id):
+        try:
+            return self.items.read_item(id, partition_key=tenant)
+        except CosmosResourceNotFoundError:
+            return None
