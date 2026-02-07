@@ -28,3 +28,7 @@ class Store:
             return self.items.read_item(id, partition_key=tenant)
         except CosmosResourceNotFoundError:
             return None
+
+    def get(self, tenant, job_id):
+        item = self.read(tenant, job_id)
+        return item if item and item.get('expires_at', self.now() + 1) > self.now() else None
