@@ -46,3 +46,7 @@ class Store:
             job.pop('expires_at', None)
             job['ttl'], job['active_shard'] = -1, job['job_id'][0]
         return job
+
+    @staticmethod
+    def conflict(exc):
+        return getattr(exc, 'status_code', None) in {409, 412} or any(r.get('statusCode') in {409, 412} for r in getattr(exc, 'operation_responses', []))
