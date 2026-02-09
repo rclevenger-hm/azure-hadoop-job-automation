@@ -32,3 +32,7 @@ class Store:
     def get(self, tenant, job_id):
         item = self.read(tenant, job_id)
         return item if item and item.get('expires_at', self.now() + 1) > self.now() else None
+
+    def enqueue(self, job):
+        # Functions extension is configured for raw JSON, not its base64 default.
+        self.queue.send_message(canonical({'tenant': job['tenant'], 'job_id': job['job_id']}), time_to_live=86400)
