@@ -36,3 +36,13 @@ class Store:
     def enqueue(self, job):
         # Functions extension is configured for raw JSON, not its base64 default.
         self.queue.send_message(canonical({'tenant': job['tenant'], 'job_id': job['job_id']}), time_to_live=86400)
+
+    def decorate(self, job):
+        if job['status'] in TERMINAL:
+            job.pop('active_shard', None)
+            job['expires_at'] = self.now() + self.retention * 86400
+            job['ttl'] = self.retention * 86400
+        else:
+            job.pop('expires_at', None)
+            job['ttl'], job['active_shard'] = -1, job['job_id'][0]
+        return job
