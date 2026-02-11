@@ -50,3 +50,33 @@ class Store:
     @staticmethod
     def conflict(exc):
         return getattr(exc, 'status_code', None) in {409, 412} or any(r.get('statusCode') in {409, 412} for r in getattr(exc, 'operation_responses', []))
+
+    def create(self, tenant, job_id, request, profile):
+        fingerprint, submission_id = digest(canonical(request)), uuid.uuid4().hex
+        for _ in range(8):
+            existing = self.read(tenant, job_id)
+            if existing:
+                if existing.get('expires_at', self.now() + 1) <= self.now():
+                    raise ApiError(409, 'EXPIRED_KEY', 'Use a fresh idempotency key')
+                if existing['fingerprint'] != fingerprint:
+                    raise ApiError(409, 'IDEMPOTENCY_CONFLICT', 'Key already used with different job inputs')
+                return existing, False
+            counter_id = 'daily:' + self.date()
+            usage = self.read(tenant, counter_id)
+            units = (usage or {}).get('units', 0)
+            if units >= self.daily_limit:
+                raise ApiError(429, 'DAILY_LIMIT', 'Daily job allowance exhausted')
+            job = self.decorate({'id': job_id, 'tenant': tenant, 'kind': 'job', 'job_id': job_id,
+                                 'request': request, 'profile': profile, 'fingerprint': fingerprint,
+                                 'submission_id': submission_id, 'statusdir': profile['status_prefix'] + submission_id,
+                                 'status': 'QUEUED', 'version': 1, 'created_at': self.now(), 'updated_at': self.now(),
+                                 'next_check': self.now() + 120})
+            counter = {'id': counter_id, 'tenant': tenant, 'units': units + 1, 'ttl': 3 * 86400}
+            operations = [('create', (job,)), self.counter_operation(counter, usage)]
+            try:
+                self.items.execute_item_batch(batch_operations=operations, partition_key=tenant)
+                return self.read(tenant, job_id), True
+            except (CosmosHttpResponseError, CosmosBatchOperationError) as exc:
+                if not self.conflict(exc):
+                    raise
+        raise ApiError(409, 'STATE_CHANGED', 'Concurrent admission; retry with the same key')
