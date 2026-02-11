@@ -80,3 +80,7 @@ class Store:
                 if not self.conflict(exc):
                     raise
         raise ApiError(409, 'STATE_CHANGED', 'Concurrent admission; retry with the same key')
+
+    @staticmethod
+    def counter_operation(counter, old):
+        return ('replace', (counter['id'], counter), {'if_match_etag': old['_etag']}) if old else ('create', (counter,))
