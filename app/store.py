@@ -84,3 +84,16 @@ class Store:
     @staticmethod
     def counter_operation(counter, old):
         return ('replace', (counter['id'], counter), {'if_match_etag': old['_etag']}) if old else ('create', (counter,))
+
+    def replace(self, job, **changes):
+        updated = self.decorate({**{k: v for k, v in job.items() if not k.startswith('_')}, **changes,
+                                 'version': job['version'] + 1, 'updated_at': self.now()})
+        try:
+            result = self.items.replace_item(job['id'], updated, etag=job['_etag'], match_condition=MatchConditions.IfNotModified)
+        except CosmosHttpResponseError as exc:
+            if exc.status_code in {404, 412}:
+                return None
+            raise
+        if result['status'] != job['status']:
+            print(json.dumps({'event': 'job_state', 'job_id': job['job_id'], 'status': result['status']}), flush=True)
+        return result
