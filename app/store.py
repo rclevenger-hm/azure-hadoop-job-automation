@@ -112,3 +112,7 @@ class Store:
                 if not self.conflict(exc):
                     raise
         raise ApiError(429, 'RATE_LIMIT', 'Concurrent request limit; retry in one minute')
+
+    def usage(self, tenant):
+        item = self.read(tenant, 'daily:' + self.date()) or {}
+        return {'date': self.date(), 'jobs': item.get('units', 0), 'limit': self.daily_limit}
