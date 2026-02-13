@@ -97,3 +97,18 @@ class Store:
         if result['status'] != job['status']:
             print(json.dumps({'event': 'job_state', 'job_id': job['job_id'], 'status': result['status']}), flush=True)
         return result
+
+    def request_limit(self, tenant):
+        id = f'rate:{self.now() // 60}'
+        for _ in range(8):
+            old = self.read(tenant, id)
+            if (old or {}).get('units', 0) >= self.rate_limit:
+                raise ApiError(429, 'RATE_LIMIT', 'Request allowance exhausted; retry in one minute')
+            counter = {'id': id, 'tenant': tenant, 'units': (old or {}).get('units', 0) + 1, 'ttl': 120}
+            try:
+                self.items.execute_item_batch(batch_operations=[self.counter_operation(counter, old)], partition_key=tenant)
+                return
+            except (CosmosHttpResponseError, CosmosBatchOperationError) as exc:
+                if not self.conflict(exc):
+                    raise
+        raise ApiError(429, 'RATE_LIMIT', 'Concurrent request limit; retry in one minute')
