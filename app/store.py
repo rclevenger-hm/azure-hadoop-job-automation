@@ -142,3 +142,7 @@ class Store:
             last = rows[limit - 1]
             token = base64.urlsafe_b64encode(canonical({'signature': signature, 'created_at': last['created_at'], 'id': last['id']}).encode()).decode()
         return rows[:limit], token
+
+    def due(self, shard, limit=25):
+        return list(self.items.query_items(query=f'SELECT TOP {int(limit)} * FROM c WHERE c.active_shard = @shard AND c.next_check <= @now ORDER BY c.next_check, c.id',
+                    parameters=[{'name': '@shard', 'value': shard}, {'name': '@now', 'value': self.now()}], enable_cross_partition_query=True))
