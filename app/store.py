@@ -116,3 +116,29 @@ class Store:
     def usage(self, tenant):
         item = self.read(tenant, 'daily:' + self.date()) or {}
         return {'date': self.date(), 'jobs': item.get('units', 0), 'limit': self.daily_limit}
+
+    def history(self, tenant, limit=20, cursor=None, status=None):
+        signature = digest(canonical({'tenant': tenant, 'status': status}))
+        params = [{'name': '@tenant', 'value': tenant}, {'name': '@now', 'value': self.now()}]
+        filters = ["c.tenant = @tenant", "c.kind = 'job'", '(NOT IS_DEFINED(c.expires_at) OR c.expires_at > @now)']
+        if status:
+            filters.append('c.status = @status')
+            params.append({'name': '@status', 'value': status})
+        if cursor:
+            try:
+                if len(cursor) > 2048:
+                    raise ValueError()
+                token = json.loads(base64.b64decode(cursor, altchars=b'-_', validate=True))
+                if token['signature'] != signature or type(token['created_at']) is not int:
+                    raise ValueError()
+                params.extend([{'name': '@created', 'value': token['created_at']}, {'name': '@id', 'value': identifier(token['id'])}])
+                filters.append('(c.created_at < @created OR (c.created_at = @created AND c.id < @id))')
+            except (ValueError, KeyError, TypeError, ApiError) as exc:
+                raise invalid('Cursor does not match this query') from exc
+        query = f"SELECT TOP {int(limit) + 1} * FROM c WHERE " + ' AND '.join(filters) + ' ORDER BY c.created_at DESC, c.id DESC'
+        rows = list(self.items.query_items(query=query, parameters=params, partition_key=tenant))
+        token = None
+        if len(rows) > limit:
+            last = rows[limit - 1]
+            token = base64.urlsafe_b64encode(canonical({'signature': signature, 'created_at': last['created_at'], 'id': last['id']}).encode()).decode()
+        return rows[:limit], token
