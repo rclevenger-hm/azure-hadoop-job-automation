@@ -146,3 +146,9 @@ class Store:
     def due(self, shard, limit=25):
         return list(self.items.query_items(query=f'SELECT TOP {int(limit)} * FROM c WHERE c.active_shard = @shard AND c.next_check <= @now ORDER BY c.next_check, c.id',
                     parameters=[{'name': '@shard', 'value': shard}, {'name': '@now', 'value': self.now()}], enable_cross_partition_query=True))
+
+    def claim_poll(self, tenant, job_id):
+        job = self.get(tenant, job_id)
+        if not job or job['status'] in TERMINAL or job['next_check'] > self.now():
+            return None
+        return self.replace(job, next_check=self.now() + 120)
