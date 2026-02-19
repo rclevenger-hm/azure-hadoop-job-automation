@@ -23,3 +23,8 @@ def remote_id(value):
     if not isinstance(value, str) or not re.fullmatch(JOB_ID, value):
         raise RemoteMismatch('Invalid remote job identity')
     return value
+
+
+class Secrets:
+    def __init__(self, credential):
+        self.credential = credential
