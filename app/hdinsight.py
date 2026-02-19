@@ -15,3 +15,5 @@ JOB_ID = r'job_[0-9]{1,24}_[0-9]{1,12}'
 MAX_RESPONSE = 1024 * 1024
 
 
+class RemoteMismatch(Exception):
+    pass
