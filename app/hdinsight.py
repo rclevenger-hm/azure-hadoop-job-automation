@@ -17,3 +17,9 @@ MAX_RESPONSE = 1024 * 1024
 
 class RemoteMismatch(Exception):
     pass
+
+
+def remote_id(value):
+    if not isinstance(value, str) or not re.fullmatch(JOB_ID, value):
+        raise RemoteMismatch('Invalid remote job identity')
+    return value
