@@ -28,3 +28,13 @@ def remote_id(value):
 class Secrets:
     def __init__(self, credential):
         self.credential = credential
+
+    @lru_cache(maxsize=16)
+    def password(self, id):
+        uri = urlsplit(id)
+        _, _, name, version = uri.path.split('/')
+        with SecretClient(f'https://{uri.netloc}', self.credential, retry_total=2, connection_timeout=3, read_timeout=8) as client:
+            value = client.get_secret(name, version).value
+        if not value:
+            raise RuntimeError('Empty cluster credential')
+        return value
