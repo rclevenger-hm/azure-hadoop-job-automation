@@ -38,3 +38,13 @@ class Secrets:
         if not value:
             raise RuntimeError('Empty cluster credential')
         return value
+
+
+class Hdinsight:
+    def __init__(self, secrets, credential=None, session=None, blob_factory=None):
+        self.secrets, self.credential = secrets, credential
+        self.session = session or requests.Session()
+        # Requests defaults to zero transport retries; explicitly retain that contract.
+        self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=0))
+        self.session.trust_env = False
+        self.blob_factory = blob_factory or self.blobs
