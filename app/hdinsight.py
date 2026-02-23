@@ -48,3 +48,7 @@ class Hdinsight:
         self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=0))
         self.session.trust_env = False
         self.blob_factory = blob_factory or self.blobs
+
+    def blobs(self, account):
+        return BlobServiceClient(f'https://{account}.blob.core.windows.net', credential=self.credential,
+                                 retry_total=2, connection_timeout=3, read_timeout=8)
