@@ -52,3 +52,22 @@ class Hdinsight:
     def blobs(self, account):
         return BlobServiceClient(f'https://{account}.blob.core.windows.net', credential=self.credential,
                                  retry_total=2, connection_timeout=3, read_timeout=8)
+
+    def call(self, job, method, path, params=None, data=None):
+        p = job['profile']
+        url = f"https://{p['cluster_name']}.azurehdinsight.net/templeton/v1/{path}"
+        started = time.monotonic()
+        with self.session.request(method, url, params={'user.name': p['username'], **(params or {})}, data=data,
+                                  auth=(p['username'], self.secrets.password(p['secret_id'])),
+                                  timeout=(3, 8), allow_redirects=False, stream=True) as response:
+            if response.status_code < 200 or response.status_code >= 300:
+                raise RuntimeError('HDInsight request failed')
+            raw = bytearray()
+            for chunk in response.iter_content(8192):
+                raw.extend(chunk)
+                if len(raw) > MAX_RESPONSE or time.monotonic() - started > 25:
+                    raise RuntimeError('HDInsight response exceeded limits')
+            result = json.loads(raw)
+            if isinstance(result, dict) and ('error' in result or 'errorCode' in result):
+                raise RuntimeError('HDInsight reported an error')
+            return result
