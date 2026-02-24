@@ -71,3 +71,8 @@ class Hdinsight:
             if isinstance(result, dict) and ('error' in result or 'errorCode' in result):
                 raise RuntimeError('HDInsight reported an error')
             return result
+
+    @staticmethod
+    def arguments(job):
+        r = job['request']
+        return [r['input_path'], r['output_path'], *r['arguments']]
