@@ -76,3 +76,11 @@ class Hdinsight:
     def arguments(job):
         r = job['request']
         return [r['input_path'], r['output_path'], *r['arguments']]
+
+    def submit(self, job):
+        r = job['request']
+        form = [('jar', r['jar_path']), ('class', r['job_class']), ('statusdir', job['statusdir']), ('enablelog', 'false')]
+        form.extend(('arg', value) for value in self.arguments(job))
+        # There is no native idempotency token. The durable SUBMITTING state precedes this one POST.
+        result = self.call(job, 'POST', 'mapreduce/jar', data=form)
+        return remote_id(result.get('id'))
