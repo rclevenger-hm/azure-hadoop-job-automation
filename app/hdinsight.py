@@ -84,3 +84,11 @@ class Hdinsight:
         # There is no native idempotency token. The durable SUBMITTING state precedes this one POST.
         result = self.call(job, 'POST', 'mapreduce/jar', data=form)
         return remote_id(result.get('id'))
+
+    def verify(self, job, result, expected):
+        r, args = job['request'], result.get('userargs', {})
+        if (result.get('id') != expected or result.get('user') != job['profile']['username']
+                or args.get('statusdir') != job['statusdir'] or args.get('jar') != r['jar_path']
+                or args.get('class') != r['job_class'] or args.get('arg') != self.arguments(job)):
+            raise RemoteMismatch('Remote job does not match the durable submission')
+        return result
