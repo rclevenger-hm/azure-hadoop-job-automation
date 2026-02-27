@@ -92,3 +92,6 @@ class Hdinsight:
                 or args.get('class') != r['job_class'] or args.get('arg') != self.arguments(job)):
             raise RemoteMismatch('Remote job does not match the durable submission')
         return result
+
+    def get(self, job, id):
+        return self.verify(job, self.call(job, 'GET', 'jobs/' + remote_id(id)), id)
