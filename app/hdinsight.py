@@ -114,3 +114,16 @@ class Hdinsight:
                 self.verify(job, result, id)
                 found.add(id)
         return sorted(found), ids[-1] if len(ids) == 5 else ''
+
+    @staticmethod
+    def state(result):
+        status = result.get('status', {})
+        state = status.get('state') or {1: 'RUNNING', 2: 'SUCCEEDED', 3: 'FAILED', 4: 'PREP', 5: 'KILLED'}.get(status.get('runState'))
+        if state == 'SUCCEEDED':
+            # WebHCat's launcher completion alone does not prove hadoop jar succeeded.
+            code = result.get('exitValue')
+            return 'RUNNING' if code is None else 'SUCCEEDED' if type(code) is int and code == 0 else 'FAILED'
+        mapped = {'PREP': 'SUBMITTED', 'RUNNING': 'RUNNING', 'FAILED': 'FAILED', 'KILLED': 'CANCELLED'}
+        if state not in mapped:
+            raise RuntimeError('Unrecognized HDInsight state')
+        return mapped[state]
