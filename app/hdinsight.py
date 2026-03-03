@@ -95,3 +95,22 @@ class Hdinsight:
 
     def get(self, job, id):
         return self.verify(job, self.call(job, 'GET', 'jobs/' + remote_id(id)), id)
+
+    def find(self, job):
+        params = {'numrecords': 5}
+        marker = job.get('scan_marker')
+        if marker:
+            params['jobid'] = remote_id(marker)
+        rows = self.call(job, 'GET', 'jobs', params=params)
+        if not isinstance(rows, list) or len(rows) > 5:
+            raise RemoteMismatch('Invalid remote page')
+        ids = [remote_id(row.get('id')) for row in rows]
+        if ids != sorted(set(ids)) or (marker and any(id <= marker for id in ids)):
+            raise RemoteMismatch('Non-progressing remote page')
+        found = set(job.get('scan_matches', []))
+        for id in ids:
+            result = self.call(job, 'GET', 'jobs/' + id)
+            if result.get('userargs', {}).get('statusdir') == job['statusdir']:
+                self.verify(job, result, id)
+                found.add(id)
+        return sorted(found), ids[-1] if len(ids) == 5 else ''
