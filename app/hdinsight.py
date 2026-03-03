@@ -130,3 +130,8 @@ class Hdinsight:
 
     def status(self, job):
         return self.state(self.get(job, job['remote_id']))
+
+    def cancel(self, job):
+        self.get(job, job['remote_id'])  # Recheck provenance before acting on the remote ID.
+        result = self.call(job, 'DELETE', 'jobs/' + remote_id(job['remote_id']))
+        return result.get('id') == job['remote_id']
