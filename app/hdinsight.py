@@ -127,3 +127,6 @@ class Hdinsight:
         if state not in mapped:
             raise RuntimeError('Unrecognized HDInsight state')
         return mapped[state]
+
+    def status(self, job):
+        return self.state(self.get(job, job['remote_id']))
