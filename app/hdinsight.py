@@ -135,3 +135,22 @@ class Hdinsight:
         self.get(job, job['remote_id'])  # Recheck provenance before acting on the remote ID.
         result = self.call(job, 'DELETE', 'jobs/' + remote_id(job['remote_id']))
         return result.get('id') == job['remote_id']
+
+    def logs(self, job, stream, limit):
+        if stream not in {'stdout', 'stderr', 'exit'}:
+            raise ApiError(400, 'INVALID_STREAM', 'stream must be stdout, stderr or exit')
+        if not job.get('remote_id'):
+            raise ApiError(409, 'NOT_SUBMITTED', 'No remote job has been identified yet')
+        uri = urlsplit(job['statusdir'])
+        container, host = uri.netloc.split('@')
+        account = host.split('.')[0]
+        key = uri.path.lstrip('/') + '/' + stream
+        try:
+            with self.blob_factory(account) as client:
+                blob = client.get_blob_client(container, key)
+                size = blob.get_blob_properties().size
+                raw = b'' if size == 0 else blob.download_blob(offset=0, length=min(size, limit + 1), max_concurrency=1).readall()
+        except ResourceNotFoundError as exc:
+            raise ApiError(404, 'LOG_NOT_READY', 'WebHCat has not written this log yet') from exc
+        return {'stream': stream, 'text': raw[:limit].decode('utf-8', errors='replace'), 'truncated': size > limit,
+                'limit_bytes': limit, 'note': 'Beginning of the launcher log; uploads may lag execution.'}
