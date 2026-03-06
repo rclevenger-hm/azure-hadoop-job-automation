@@ -10,3 +10,12 @@ def public(job):
 class Service:
     def __init__(self, store, backend, profiles):
         self.store, self.backend, self.profiles = store, backend, profiles
+
+    def submit(self, caller, key, payload):
+        request = job_request(payload, self.profiles, caller)
+        tenant = caller.tenant
+        job_id = key_id(key, tenant)
+        job, created = self.store.create(tenant, job_id, request, self.profiles[request['profile']])
+        if job['status'] == 'QUEUED':
+            self.store.enqueue(job)
+        return public(job), created
