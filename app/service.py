@@ -38,3 +38,17 @@ class Service:
             if updated:
                 return public(updated)
         raise ApiError(409, 'STATE_CHANGED', 'Job changed concurrently; retry the request')
+
+    def attach(self, tenant, job_id, remote_id=None, reason=None):
+        for _ in range(5):
+            job = self.store.get(tenant, job_id)
+            if not job or job['status'] in TERMINAL or job.get('remote_id'):
+                return
+            changes = {'next_check': self.store.now()}
+            if remote_id:
+                changes.update(remote_id=remote_id, status='CANCEL_REQUESTED' if job.get('cancel_requested') else 'SUBMITTED', reason='')
+            else:
+                changes.update(status='CANCEL_REQUESTED' if job.get('cancel_requested') else 'SUBMISSION_UNKNOWN', reason=reason)
+            if self.store.replace(job, **changes):
+                return
+        raise RuntimeError('Concurrent updates prevented remote identity attachment; reconciliation will retry')
