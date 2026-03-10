@@ -71,3 +71,45 @@ class Service:
             self.attach(tenant, job_id, reason='SUBMISSION_OUTCOME_UNKNOWN')
             return
         self.attach(tenant, job_id, remote_id=remote_id)
+
+    def reconcile_one(self, tenant, job_id):
+        job = self.store.claim_poll(tenant, job_id)
+        if not job:
+            return
+        if job['status'] == 'QUEUED':
+            if self.store.now() - job['created_at'] > 86400:
+                self.store.replace(job, status='FAILED', reason='QUEUE_ADMISSION_EXPIRED')
+            else:
+                self.store.enqueue(job)
+            return
+        if not job.get('remote_id'):
+            # Allow the submitter to finish before looking for a lost response.
+            if self.store.now() - job.get('submitted_at', job['created_at']) < 120:
+                return
+            try:
+                matches, marker = self.backend.find(job)
+            except RemoteMismatch:
+                self.store.replace(job, status='NEEDS_REVIEW', reason='REMOTE_IDENTITY_MISMATCH')
+                return
+            if len(matches) > 1:
+                self.store.replace(job, status='NEEDS_REVIEW', reason='MULTIPLE_MATCHING_JOBS')
+            elif marker and self.store.now() - job.get('submitted_at', job['created_at']) > 86400:
+                self.store.replace(job, status='NEEDS_REVIEW', reason='RECONCILIATION_DEADLINE')
+            elif marker:
+                self.store.replace(job, scan_marker=marker, scan_matches=matches, next_check=self.store.now() + 30)
+            elif matches:
+                self.attach(tenant, job_id, remote_id=matches[0])
+            elif self.store.now() - job.get('submitted_at', job['created_at']) > 86400:
+                self.store.replace(job, status='NEEDS_REVIEW', reason='NO_JOB_FOUND_OUTCOME_STILL_UNKNOWN')
+            else:
+                self.store.replace(job, status='CANCEL_REQUESTED' if job.get('cancel_requested') else 'SUBMISSION_UNKNOWN', scan_marker='', scan_matches=[], reason='SUBMISSION_OUTCOME_UNKNOWN')
+            return
+        try:
+            state = self.backend.status(job)
+        except RemoteMismatch:
+            self.store.replace(job, status='NEEDS_REVIEW', reason='REMOTE_IDENTITY_MISMATCH')
+            return
+        changes = {'status': state}
+        if job.get('cancel_requested') and state not in TERMINAL:
+            changes.update(status='CANCEL_REQUESTED', cancel_accepted=self.backend.cancel(job))
+        self.store.replace(job, **changes)
