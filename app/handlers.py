@@ -30,3 +30,8 @@ def runtime():
         store = Store(db, queue, cfg['daily_limit'], cfg['rate_limit'], cfg['retention'])
         _SERVICE = Service(store, Hdinsight(Secrets(identity), identity), cfg['profiles'])
     return _SERVICE
+
+
+def response(status, value, request_id):
+    return json.dumps(value), status, {'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Request-Id': request_id,
+                                     **({'Retry-After': '60'} if status == 429 else {})}
