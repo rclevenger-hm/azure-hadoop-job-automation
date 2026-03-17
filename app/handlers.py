@@ -80,3 +80,12 @@ def api_handler(request):
         return response(status, {'code': 'SERVICE_UNAVAILABLE', 'error': 'Service temporarily unavailable', 'request_id': request_id}, request_id)
     finally:
         print(json.dumps({'event': 'api_request', 'request_id': request_id, 'status': status}), flush=True)
+
+
+def worker_handler(raw):
+    if len(raw) > 1024:
+        raise ValueError('Invalid queue message')
+    message = body(raw)
+    if set(message) != {'tenant', 'job_id'}:
+        raise ValueError('Invalid queue message')
+    runtime().process(message)
