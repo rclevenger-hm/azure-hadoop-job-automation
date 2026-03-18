@@ -89,3 +89,10 @@ def worker_handler(raw):
     if set(message) != {'tenant', 'job_id'}:
         raise ValueError('Invalid queue message')
     runtime().process(message)
+
+
+def reconcile_handler():
+    started = time.monotonic()
+    result = runtime().reconcile(lambda: max(0, int((110 - (time.monotonic() - started)) * 1000)))
+    print(json.dumps({'event': 'reconcile_complete', **result}), flush=True)
+    return result
