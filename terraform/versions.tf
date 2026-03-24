@@ -15,3 +15,4 @@ provider "azurerm" {
   resource_provider_registrations = "none"
 }
 data "azurerm_client_config" "current" {}
+resource "random_id" "suffix" { byte_length = 4 }
