@@ -22,3 +22,10 @@ resource "azurerm_resource_group" "service" {
   tags     = local.tags
   lifecycle { prevent_destroy = true }
 }
+locals {
+  roles         = toset(["api", "worker"])
+  suffix        = random_id.suffix.hex
+  tags          = { service = "azure-hadoop-job-automation", environment = var.environment, managed_by = "terraform" }
+  callers       = distinct(flatten([for p in values(var.profiles) : p.allowed_callers]))
+  secret_scopes = toset([for p in values(var.profiles) : replace(p.secret_resource_id, "/versions/[^/]+$/", "")])
+}
