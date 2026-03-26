@@ -16,3 +16,9 @@ provider "azurerm" {
 }
 data "azurerm_client_config" "current" {}
 resource "random_id" "suffix" { byte_length = 4 }
+resource "azurerm_resource_group" "service" {
+  name     = "${var.name}-rg"
+  location = var.location
+  tags     = local.tags
+  lifecycle { prevent_destroy = true }
+}
