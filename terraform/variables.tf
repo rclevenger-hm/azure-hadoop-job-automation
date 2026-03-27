@@ -22,3 +22,7 @@ variable "name" {
     error_message = "Use 3–18 lowercase letters, digits or hyphens."
   }
 }
+variable "environment" {
+  type    = string
+  default = "dev"
+}
