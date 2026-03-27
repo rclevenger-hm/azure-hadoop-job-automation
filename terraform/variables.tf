@@ -14,3 +14,11 @@ variable "api_client_id" {
     error_message = "Use the API application's client GUID."
   }
 }
+variable "name" {
+  type    = string
+  default = "hadoop-dev"
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{2,17}$", var.name))
+    error_message = "Use 3–18 lowercase letters, digits or hyphens."
+  }
+}
