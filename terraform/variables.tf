@@ -30,3 +30,4 @@ variable "location" {
   type    = string
   default = "eastus"
 }
+variable "virtual_network_id" { type = string }
