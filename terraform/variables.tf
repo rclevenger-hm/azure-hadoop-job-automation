@@ -35,3 +35,4 @@ variable "integration_subnet_id" {
   type        = string
   description = "Existing subnet delegated to Microsoft.App/environments, /27 or larger; routable to HDInsight and private endpoints."
 }
+variable "private_endpoint_subnet_id" { type = string }
