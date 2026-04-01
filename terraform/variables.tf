@@ -60,3 +60,11 @@ variable "profiles" {
     error_message = "Profiles require bounded names, version-pinned Key Vault secrets, explicit callers, and canonical directory prefixes."
   }
 }
+variable "log_container_resource_ids" {
+  type        = set(string)
+  description = "Existing storage container ARM IDs containing profile status prefixes. API identity receives Blob Data Reader."
+  validation {
+    condition     = length(var.log_container_resource_ids) > 0 && alltrue([for id in var.log_container_resource_ids : can(regex("/blobServices/default/containers/[^/]+$", id))])
+    error_message = "Provide exact log container resource IDs."
+  }
+}
