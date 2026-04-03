@@ -68,3 +68,11 @@ variable "log_container_resource_ids" {
     error_message = "Provide exact log container resource IDs."
   }
 }
+variable "daily_job_limit" {
+  type    = number
+  default = 100
+  validation {
+    condition     = var.daily_job_limit >= 1 && var.daily_job_limit <= 10000 && floor(var.daily_job_limit) == var.daily_job_limit
+    error_message = "Daily limit must be an integer from 1 to 10000."
+  }
+}
