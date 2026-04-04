@@ -84,3 +84,11 @@ variable "requests_per_minute" {
     error_message = "Request limit must be an integer from 1 to 1000."
   }
 }
+variable "retention_days" {
+  type    = number
+  default = 30
+  validation {
+    condition     = var.retention_days >= 7 && var.retention_days <= 365 && floor(var.retention_days) == var.retention_days
+    error_message = "Retention must be an integer from 7 to 365 days."
+  }
+}
