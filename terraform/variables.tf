@@ -92,3 +92,11 @@ variable "retention_days" {
     error_message = "Retention must be an integer from 7 to 365 days."
   }
 }
+variable "maximum_instances" {
+  type    = number
+  default = 5
+  validation {
+    condition     = var.maximum_instances >= 1 && var.maximum_instances <= 20 && floor(var.maximum_instances) == var.maximum_instances
+    error_message = "Use 1–20 instances per app."
+  }
+}
