@@ -100,3 +100,4 @@ variable "maximum_instances" {
     error_message = "Use 1–20 instances per app."
   }
 }
+variable "alert_email" { type = string }
