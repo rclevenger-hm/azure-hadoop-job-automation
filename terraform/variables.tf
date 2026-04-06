@@ -101,3 +101,11 @@ variable "maximum_instances" {
   }
 }
 variable "alert_email" { type = string }
+variable "monthly_budget" {
+  type    = number
+  default = 150
+  validation {
+    condition     = var.monthly_budget > 0
+    error_message = "Budget must be positive."
+  }
+}
