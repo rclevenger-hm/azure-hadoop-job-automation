@@ -109,3 +109,7 @@ variable "monthly_budget" {
     error_message = "Budget must be positive."
   }
 }
+variable "budget_start_date" {
+  type        = string
+  description = "First day of the current billing month, e.g. 2026-10-01T00:00:00Z."
+}
