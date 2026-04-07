@@ -17,3 +17,16 @@ resource "azurerm_storage_account" "host" {
     container_delete_retention_policy { days = 7 }
   }
 }
+resource "azurerm_storage_account" "queue" {
+  name                            = "hdqueue${local.suffix}"
+  resource_group_name             = azurerm_resource_group.service.name
+  location                        = var.location
+  account_tier                    = "Standard"
+  account_replication_type        = "ZRS"
+  min_tls_version                 = "TLS1_2"
+  shared_access_key_enabled       = false
+  default_to_oauth_authentication = true
+  allow_nested_items_to_be_public = false
+  public_network_access           = "Disabled"
+  tags                            = local.tags
+}
