@@ -30,3 +30,10 @@ resource "azurerm_storage_account" "queue" {
   public_network_access           = "Disabled"
   tags                            = local.tags
 }
+resource "azurerm_storage_container" "deployment" {
+  for_each              = local.roles
+  name                  = "deployment"
+  storage_account_id    = azurerm_storage_account.host[each.key].id
+  container_access_type = "private"
+  depends_on            = [azurerm_private_endpoint.storage]
+}
