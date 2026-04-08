@@ -37,3 +37,9 @@ resource "azurerm_storage_container" "deployment" {
   container_access_type = "private"
   depends_on            = [azurerm_private_endpoint.storage]
 }
+resource "azurerm_storage_queue" "jobs" {
+  for_each           = toset(["jobs", "jobs-poison"])
+  name               = each.key
+  storage_account_id = azurerm_storage_account.queue.id
+  depends_on         = [azurerm_private_endpoint.storage]
+}
