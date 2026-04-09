@@ -20,3 +20,8 @@ resource "azurerm_cosmosdb_account" "state" {
   tags = local.tags
   lifecycle { prevent_destroy = true }
 }
+resource "azurerm_cosmosdb_sql_database" "state" {
+  name                = "hadoop"
+  resource_group_name = azurerm_resource_group.service.name
+  account_name        = azurerm_cosmosdb_account.state.name
+}
