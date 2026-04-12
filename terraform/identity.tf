@@ -5,3 +5,9 @@ resource "azurerm_user_assigned_identity" "app" {
   location            = var.location
   tags                = local.tags
 }
+resource "azurerm_role_assignment" "host_blob" {
+  for_each             = local.roles
+  scope                = azurerm_storage_account.host[each.key].id
+  role_definition_name = "Storage Blob Data Owner"
+  principal_id         = azurerm_user_assigned_identity.app[each.key].principal_id
+}
