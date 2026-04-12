@@ -11,3 +11,9 @@ resource "azurerm_role_assignment" "host_blob" {
   role_definition_name = "Storage Blob Data Owner"
   principal_id         = azurerm_user_assigned_identity.app[each.key].principal_id
 }
+resource "azurerm_role_assignment" "host_queue" {
+  for_each             = local.roles
+  scope                = azurerm_storage_account.host[each.key].id
+  role_definition_name = "Storage Queue Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.app[each.key].principal_id
+}
