@@ -23,3 +23,8 @@ resource "azurerm_role_assignment" "queue_sender" {
   principal_id         = azurerm_user_assigned_identity.app["api"].principal_id
   depends_on           = [azurerm_storage_queue.jobs]
 }
+resource "azurerm_role_assignment" "queue_worker" {
+  scope                = azurerm_storage_account.queue.id
+  role_definition_name = "Storage Queue Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.app["worker"].principal_id
+}
