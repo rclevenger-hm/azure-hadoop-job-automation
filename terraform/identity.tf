@@ -28,3 +28,11 @@ resource "azurerm_role_assignment" "queue_worker" {
   role_definition_name = "Storage Queue Data Contributor"
   principal_id         = azurerm_user_assigned_identity.app["worker"].principal_id
 }
+resource "azurerm_cosmosdb_sql_role_assignment" "state" {
+  for_each            = local.roles
+  resource_group_name = azurerm_resource_group.service.name
+  account_name        = azurerm_cosmosdb_account.state.name
+  role_definition_id  = "${azurerm_cosmosdb_account.state.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
+  principal_id        = azurerm_user_assigned_identity.app[each.key].principal_id
+  scope               = "${azurerm_cosmosdb_account.state.id}/dbs/${azurerm_cosmosdb_sql_database.state.name}/colls/${azurerm_cosmosdb_sql_container.items.name}"
+}
