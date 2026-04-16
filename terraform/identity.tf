@@ -42,3 +42,9 @@ resource "azurerm_role_assignment" "cluster_secret" {
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.app["worker"].principal_id
 }
+resource "azurerm_role_assignment" "logs" {
+  for_each             = var.log_container_resource_ids
+  scope                = each.value
+  role_definition_name = "Storage Blob Data Reader"
+  principal_id         = azurerm_user_assigned_identity.app["api"].principal_id
+}
