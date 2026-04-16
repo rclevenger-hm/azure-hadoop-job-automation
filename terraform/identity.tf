@@ -36,3 +36,9 @@ resource "azurerm_cosmosdb_sql_role_assignment" "state" {
   principal_id        = azurerm_user_assigned_identity.app[each.key].principal_id
   scope               = "${azurerm_cosmosdb_account.state.id}/dbs/${azurerm_cosmosdb_sql_database.state.name}/colls/${azurerm_cosmosdb_sql_container.items.name}"
 }
+resource "azurerm_role_assignment" "cluster_secret" {
+  for_each             = local.secret_scopes
+  scope                = each.value
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.app["worker"].principal_id
+}
