@@ -13,3 +13,9 @@ locals {
     dispatch     = { id = azurerm_storage_account.queue.id, group = "queue" }
   }
 }
+resource "azurerm_private_dns_zone" "service" {
+  for_each            = local.dns_zones
+  name                = each.value
+  resource_group_name = azurerm_resource_group.service.name
+  tags                = local.tags
+}
