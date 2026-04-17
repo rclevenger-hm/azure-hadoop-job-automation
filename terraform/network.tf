@@ -19,3 +19,10 @@ resource "azurerm_private_dns_zone" "service" {
   resource_group_name = azurerm_resource_group.service.name
   tags                = local.tags
 }
+resource "azurerm_private_dns_zone_virtual_network_link" "service" {
+  for_each             = local.dns_zones
+  name                 = "${var.name}-${each.key}"
+  private_dns_zone_id  = azurerm_private_dns_zone.service[each.key].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
+}
