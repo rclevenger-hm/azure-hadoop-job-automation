@@ -44,3 +44,20 @@ resource "azurerm_private_endpoint" "storage" {
   }
   tags = local.tags
 }
+resource "azurerm_private_endpoint" "cosmos" {
+  name                = "${var.name}-cosmos"
+  resource_group_name = azurerm_resource_group.service.name
+  location            = var.location
+  subnet_id           = var.private_endpoint_subnet_id
+  private_service_connection {
+    name                           = "cosmos"
+    private_connection_resource_id = azurerm_cosmosdb_account.state.id
+    subresource_names              = ["Sql"]
+    is_manual_connection           = false
+  }
+  private_dns_zone_group {
+    name                 = "default"
+    private_dns_zone_ids = [azurerm_private_dns_zone.service["cosmos"].id]
+  }
+  tags = local.tags
+}
