@@ -26,3 +26,21 @@ resource "azurerm_private_dns_zone_virtual_network_link" "service" {
   virtual_network_id   = var.virtual_network_id
   registration_enabled = false
 }
+resource "azurerm_private_endpoint" "storage" {
+  for_each            = local.storage_endpoints
+  name                = "${var.name}-${each.key}"
+  resource_group_name = azurerm_resource_group.service.name
+  location            = var.location
+  subnet_id           = var.private_endpoint_subnet_id
+  private_service_connection {
+    name                           = each.key
+    private_connection_resource_id = each.value.id
+    subresource_names              = [each.value.group]
+    is_manual_connection           = false
+  }
+  private_dns_zone_group {
+    name                 = "default"
+    private_dns_zone_ids = [azurerm_private_dns_zone.service[each.value.group].id]
+  }
+  tags = local.tags
+}
