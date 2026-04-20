@@ -61,3 +61,21 @@ resource "azurerm_private_endpoint" "cosmos" {
   }
   tags = local.tags
 }
+resource "azurerm_private_endpoint" "functions" {
+  for_each            = local.roles
+  name                = "${var.name}-${each.key}-app"
+  resource_group_name = azurerm_resource_group.service.name
+  location            = var.location
+  subnet_id           = var.private_endpoint_subnet_id
+  private_service_connection {
+    name                           = each.key
+    private_connection_resource_id = azurerm_function_app_flex_consumption.app[each.key].id
+    subresource_names              = ["sites"]
+    is_manual_connection           = false
+  }
+  private_dns_zone_group {
+    name                 = "default"
+    private_dns_zone_ids = [azurerm_private_dns_zone.service["functions"].id]
+  }
+  tags = local.tags
+}
