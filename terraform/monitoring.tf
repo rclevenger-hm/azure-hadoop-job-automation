@@ -15,3 +15,13 @@ resource "azurerm_application_insights" "service" {
   workspace_id        = azurerm_log_analytics_workspace.service.id
   tags                = local.tags
 }
+resource "azurerm_monitor_action_group" "operators" {
+  name                = "${var.name}-operators"
+  resource_group_name = azurerm_resource_group.service.name
+  short_name          = "hadoop"
+  email_receiver {
+    name          = "operator"
+    email_address = var.alert_email
+  }
+  tags = local.tags
+}
