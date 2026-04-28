@@ -46,3 +46,20 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "errors" {
   action { action_groups = [azurerm_monitor_action_group.operators.id] }
   tags = local.tags
 }
+resource "azurerm_monitor_metric_alert" "queue" {
+  name                = "${var.name}-queue-backlog"
+  resource_group_name = azurerm_resource_group.service.name
+  scopes              = ["${azurerm_storage_account.queue.id}/queueServices/default"]
+  severity            = 2
+  frequency           = "PT1H"
+  window_size         = "PT1H"
+  criteria {
+    metric_namespace = "Microsoft.Storage/storageAccounts/queueServices"
+    metric_name      = "QueueMessageCount"
+    aggregation      = "Average"
+    operator         = "GreaterThan"
+    threshold        = 20
+  }
+  action { action_group_id = azurerm_monitor_action_group.operators.id }
+  tags = local.tags
+}
