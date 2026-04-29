@@ -63,3 +63,16 @@ resource "azurerm_monitor_metric_alert" "queue" {
   action { action_group_id = azurerm_monitor_action_group.operators.id }
   tags = local.tags
 }
+resource "azurerm_consumption_budget_resource_group" "service" {
+  name              = "${var.name}-monthly"
+  resource_group_id = azurerm_resource_group.service.id
+  amount            = var.monthly_budget
+  time_grain        = "Monthly"
+  time_period { start_date = var.budget_start_date }
+  notification {
+    enabled        = true
+    threshold      = 80
+    operator       = "GreaterThanOrEqualTo"
+    contact_emails = [var.alert_email]
+  }
+}
