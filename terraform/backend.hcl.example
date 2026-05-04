@@ -1,0 +1,5 @@
+resource_group_name  = "terraform-state-rg"
+storage_account_name = "yourtfstate"
+container_name       = "tfstate"
+key                  = "azure-hadoop-job-automation.tfstate"
+use_oidc             = true
