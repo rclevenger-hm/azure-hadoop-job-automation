@@ -39,3 +39,11 @@ variables {
   budget_start_date = "2026-10-01T00:00:00Z"
 }
 
+run "private_functions" {
+  command = plan
+  assert {
+    condition     = alltrue([for a in values(azurerm_function_app_flex_consumption.app) : !a.public_network_access_enabled && a.https_only])
+    error_message = "Contract failed: private_functions."
+  }
+}
+
