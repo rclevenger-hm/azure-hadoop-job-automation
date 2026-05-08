@@ -79,3 +79,11 @@ run "keyless_private_storage" {
   }
 }
 
+run "partitioned_state" {
+  command = plan
+  assert {
+    condition     = azurerm_cosmosdb_sql_container.items.partition_key_paths == tolist(["/tenant"]) && azurerm_cosmosdb_sql_container.items.default_ttl == -1
+    error_message = "Contract failed: partitioned_state."
+  }
+}
+
