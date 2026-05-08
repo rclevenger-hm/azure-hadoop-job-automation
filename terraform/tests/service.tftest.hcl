@@ -47,3 +47,11 @@ run "private_functions" {
   }
 }
 
+run "managed_identity_deployment" {
+  command = plan
+  assert {
+    condition     = alltrue([for a in values(azurerm_function_app_flex_consumption.app) : a.storage_authentication_type == "UserAssignedIdentity" && !a.webdeploy_publish_basic_authentication_enabled])
+    error_message = "Contract failed: managed_identity_deployment."
+  }
+}
+
