@@ -63,3 +63,11 @@ run "isolated_trigger_roles" {
   }
 }
 
+run "bounded_scaling" {
+  command = plan
+  assert {
+    condition     = alltrue([for a in values(azurerm_function_app_flex_consumption.app) : a.maximum_instance_count == 5 && a.runtime_version == "3.12"])
+    error_message = "Contract failed: bounded_scaling."
+  }
+}
+
