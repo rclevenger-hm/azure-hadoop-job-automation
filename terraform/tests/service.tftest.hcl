@@ -55,3 +55,11 @@ run "managed_identity_deployment" {
   }
 }
 
+run "isolated_trigger_roles" {
+  command = plan
+  assert {
+    condition     = azurerm_function_app_flex_consumption.app["api"].app_settings.APP_ROLE == "api" && azurerm_function_app_flex_consumption.app["worker"].app_settings.APP_ROLE == "worker"
+    error_message = "Contract failed: isolated_trigger_roles."
+  }
+}
+
