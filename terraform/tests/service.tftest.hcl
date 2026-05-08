@@ -71,3 +71,11 @@ run "bounded_scaling" {
   }
 }
 
+run "keyless_private_storage" {
+  command = plan
+  assert {
+    condition     = alltrue([for a in values(azurerm_storage_account.host) : !a.shared_access_key_enabled && a.public_network_access == "Disabled" && !a.allow_nested_items_to_be_public]) && !azurerm_storage_account.queue.shared_access_key_enabled
+    error_message = "Contract failed: keyless_private_storage."
+  }
+}
+
