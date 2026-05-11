@@ -87,3 +87,11 @@ run "partitioned_state" {
   }
 }
 
+run "private_keyless_cosmos" {
+  command = plan
+  assert {
+    condition     = !azurerm_cosmosdb_account.state.public_network_access_enabled && !azurerm_cosmosdb_account.state.local_authentication_enabled
+    error_message = "Contract failed: private_keyless_cosmos."
+  }
+}
+
