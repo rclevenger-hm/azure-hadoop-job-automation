@@ -95,3 +95,11 @@ run "private_keyless_cosmos" {
   }
 }
 
+run "continuous_backup" {
+  command = plan
+  assert {
+    condition     = azurerm_cosmosdb_account.state.backup[0].type == "Continuous"
+    error_message = "Contract failed: continuous_backup."
+  }
+}
+
