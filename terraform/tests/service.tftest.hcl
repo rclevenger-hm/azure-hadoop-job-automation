@@ -103,3 +103,11 @@ run "continuous_backup" {
   }
 }
 
+run "poison_queue" {
+  command = plan
+  assert {
+    condition     = contains(keys(azurerm_storage_queue.jobs), "jobs-poison")
+    error_message = "Contract failed: poison_queue."
+  }
+}
+
