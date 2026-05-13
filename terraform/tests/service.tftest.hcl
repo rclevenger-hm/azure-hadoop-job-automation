@@ -143,3 +143,11 @@ run "body_size_limit" {
   }
 }
 
+run "monitoring" {
+  command = plan
+  assert {
+    condition     = azurerm_monitor_metric_alert.queue.criteria[0].metric_name == "QueueMessageCount" && azurerm_monitor_scheduled_query_rules_alert_v2.errors.severity == 2
+    error_message = "Contract failed: monitoring."
+  }
+}
+
