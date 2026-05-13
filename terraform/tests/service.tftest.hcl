@@ -111,3 +111,11 @@ run "poison_queue" {
   }
 }
 
+run "least_privilege_sender" {
+  command = plan
+  assert {
+    condition     = azurerm_role_assignment.queue_sender.role_definition_name == "Storage Queue Data Message Sender"
+    error_message = "Contract failed: least_privilege_sender."
+  }
+}
+
