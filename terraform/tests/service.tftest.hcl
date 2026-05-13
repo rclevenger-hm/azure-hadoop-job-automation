@@ -119,3 +119,11 @@ run "least_privilege_sender" {
   }
 }
 
+run "read_only_logs" {
+  command = plan
+  assert {
+    condition     = alltrue([for r in values(azurerm_role_assignment.logs) : r.role_definition_name == "Storage Blob Data Reader"])
+    error_message = "Contract failed: read_only_logs."
+  }
+}
+
