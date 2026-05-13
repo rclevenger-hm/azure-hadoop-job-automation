@@ -135,3 +135,11 @@ run "private_endpoints" {
   }
 }
 
+run "body_size_limit" {
+  command = plan
+  assert {
+    condition     = azurerm_function_app_flex_consumption.app["api"].app_settings.FUNCTIONS_REQUEST_BODY_SIZE_LIMIT == "65536"
+    error_message = "Contract failed: body_size_limit."
+  }
+}
+
