@@ -127,3 +127,11 @@ run "read_only_logs" {
   }
 }
 
+run "private_endpoints" {
+  command = plan
+  assert {
+    condition     = length(azurerm_private_endpoint.storage) == 5 && length(azurerm_private_endpoint.functions) == 2
+    error_message = "Contract failed: private_endpoints."
+  }
+}
+
