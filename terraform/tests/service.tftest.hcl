@@ -159,3 +159,9 @@ run "budget" {
   }
 }
 
+run "reject_zero_quota" {
+  command = plan
+  variables { daily_job_limit = 0 }
+  expect_failures = [var.daily_job_limit]
+}
+
