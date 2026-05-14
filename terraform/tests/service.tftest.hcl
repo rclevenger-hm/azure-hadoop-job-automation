@@ -151,3 +151,11 @@ run "monitoring" {
   }
 }
 
+run "budget" {
+  command = plan
+  assert {
+    condition     = azurerm_consumption_budget_resource_group.service.amount == 150
+    error_message = "Contract failed: budget."
+  }
+}
+
