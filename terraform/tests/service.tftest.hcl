@@ -165,3 +165,9 @@ run "reject_zero_quota" {
   expect_failures = [var.daily_job_limit]
 }
 
+run "reject_excessive_scale" {
+  command = plan
+  variables { maximum_instances = 100 }
+  expect_failures = [var.maximum_instances]
+}
+
