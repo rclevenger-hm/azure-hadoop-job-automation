@@ -171,3 +171,8 @@ run "reject_excessive_scale" {
   expect_failures = [var.maximum_instances]
 }
 
+run "reject_short_retention" {
+  command = plan
+  variables { retention_days = 1 }
+  expect_failures = [var.retention_days]
+}
