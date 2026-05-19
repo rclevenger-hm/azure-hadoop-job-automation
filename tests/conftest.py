@@ -16,3 +16,6 @@ CALLER = Identity('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-11
 OTHER = Identity(CALLER.directory, '33333333-3333-3333-3333-333333333333')
 
 
+@pytest.fixture
+def profiles():
+    return load_profiles(open('examples/profiles.json').read())
