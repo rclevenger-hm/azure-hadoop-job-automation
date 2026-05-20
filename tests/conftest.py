@@ -24,3 +24,16 @@ def profiles():
 @pytest.fixture
 def payload():
     return json.load(open('examples/job.json'))
+
+
+@pytest.fixture
+def env(profiles):
+    db, queue, backend = Container(), Mock(), Mock()
+    clock = [1780315200]
+    store = Store(db, queue, clock=lambda: clock[0])
+    backend.submit.return_value = 'job_1780315200000_0001'
+    backend.find.return_value = ([], '')
+    backend.status.return_value = 'RUNNING'
+    backend.cancel.return_value = True
+    service = Service(store, backend, copy.deepcopy(profiles))
+    return SimpleNamespace(store=store, service=service, backend=backend, clock=clock, db=db, queue=queue)
