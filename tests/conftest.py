@@ -19,3 +19,8 @@ OTHER = Identity(CALLER.directory, '33333333-3333-3333-3333-333333333333')
 @pytest.fixture
 def profiles():
     return load_profiles(open('examples/profiles.json').read())
+
+
+@pytest.fixture
+def payload():
+    return json.load(open('examples/job.json'))
