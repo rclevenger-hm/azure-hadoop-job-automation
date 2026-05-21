@@ -37,3 +37,8 @@ def env(profiles):
     backend.cancel.return_value = True
     service = Service(store, backend, copy.deepcopy(profiles))
     return SimpleNamespace(store=store, service=service, backend=backend, clock=clock, db=db, queue=queue)
+
+
+def create(env, payload, key='valid-key-123'):
+    value, _ = env.service.submit(CALLER, key, payload)
+    return env.store.get(CALLER.tenant, value['job_id'])
