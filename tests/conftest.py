@@ -46,3 +46,9 @@ def create(env, payload, key='valid-key-123'):
 
 def message(job):
     return {'tenant': job['tenant'], 'job_id': job['job_id']}
+
+
+def remote(job, id='job_1780315200000_0001', state='RUNNING', exit_value=None):
+    return {'id': id, 'user': job['profile']['username'], 'status': {'state': state}, 'exitValue': exit_value,
+            'userargs': {'jar': job['request']['jar_path'], 'class': job['request']['job_class'],
+                         'arg': Hdinsight.arguments(job), 'statusdir': job['statusdir']}}
