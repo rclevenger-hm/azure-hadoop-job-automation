@@ -39,3 +39,12 @@ class Container:
                 results.append({'statusCode': 201, 'resourceBody': pending[key]})
             self.data = pending
             return copy.deepcopy(results)
+
+    def replace_item(self, id, body, etag, match_condition):
+        with self.lock:
+            key = (body['tenant'], id)
+            previous = self.data.get(key)
+            if not previous or previous['_etag'] != etag:
+                raise CosmosHttpResponseError(status_code=412)
+            self.data[key] = self.stamp(body)
+            return copy.deepcopy(self.data[key])
