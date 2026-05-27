@@ -20,3 +20,22 @@ class Container:
     def stamp(self, body):
         self.sequence += 1
         return {**copy.deepcopy(body), '_etag': str(self.sequence)}
+
+    def execute_item_batch(self, batch_operations, partition_key):
+        with self.lock:
+            pending = copy.deepcopy(self.data)
+            results = []
+            for index, operation in enumerate(batch_operations):
+                kind, args, *options = operation
+                body = args[-1]
+                assert body['tenant'] == partition_key
+                key = (partition_key, body['id'])
+                previous = pending.get(key)
+                code = 409 if kind == 'create' and previous else 412 if kind == 'replace' and (not previous or options[0]['if_match_etag'] != previous['_etag']) else None
+                if code:
+                    raise CosmosBatchOperationError(index, status_code=code, operation_responses=[{'statusCode': code}])
+                assert kind in {'create', 'replace'}
+                pending[key] = self.stamp(body)
+                results.append({'statusCode': 201, 'resourceBody': pending[key]})
+            self.data = pending
+            return copy.deepcopy(results)
