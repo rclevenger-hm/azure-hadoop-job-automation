@@ -16,3 +16,7 @@ class Container:
             if value is None:
                 raise CosmosResourceNotFoundError(status_code=404)
             return copy.deepcopy(value)
+
+    def stamp(self, body):
+        self.sequence += 1
+        return {**copy.deepcopy(body), '_etag': str(self.sequence)}
