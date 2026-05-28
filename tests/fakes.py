@@ -48,3 +48,21 @@ class Container:
                 raise CosmosHttpResponseError(status_code=412)
             self.data[key] = self.stamp(body)
             return copy.deepcopy(self.data[key])
+
+    def query_items(self, *, query, parameters, partition_key=None, enable_cross_partition_query=False):
+        params = {p['name']: p['value'] for p in parameters}
+        with self.lock:
+            rows = copy.deepcopy(list(self.data.values()))
+        if partition_key is not None:
+            assert params['@tenant'] == partition_key
+            rows = [r for r in rows if r['tenant'] == partition_key and r.get('kind') == 'job' and r.get('expires_at', params['@now'] + 1) > params['@now']]
+            if '@status' in params:
+                rows = [r for r in rows if r['status'] == params['@status']]
+            if '@created' in params:
+                rows = [r for r in rows if (r['created_at'], r['id']) < (params['@created'], params['@id'])]
+            rows.sort(key=lambda r: (r['created_at'], r['id']), reverse=True)
+        else:
+            assert enable_cross_partition_query
+            rows = [r for r in rows if r.get('active_shard') == params['@shard'] and r['next_check'] <= params['@now']]
+            rows.sort(key=lambda r: (r['next_check'], r['id']))
+        return rows[:int(re.search(r'TOP (\d+)', query)[1])]
