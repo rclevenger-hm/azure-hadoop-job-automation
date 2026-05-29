@@ -22,3 +22,10 @@ def claims():
     now = int(time.time())
     return {'iss': f'https://login.microsoftonline.com/{CALLER.directory}/v2.0', 'aud': AUDIENCE, 'tid': CALLER.directory,
             'oid': CALLER.subject, 'sub': 'opaque-subject', 'ver': '2.0', 'iat': now, 'nbf': now - 1, 'exp': now + 300}
+
+
+def verify(key, values, signing_key=None, algorithm='RS256'):
+    token = jwt.encode(values, signing_key or key, algorithm=algorithm)
+    client = Mock()
+    client.get_signing_key_from_jwt.return_value = SimpleNamespace(key=key.public_key())
+    return authenticate('Bearer ' + token, CALLER.directory, AUDIENCE, [CALLER.subject], client)
