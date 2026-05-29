@@ -13,3 +13,6 @@ from conftest import CALLER
 AUDIENCE = '44444444-4444-4444-4444-444444444444'
 
 
+@pytest.fixture(scope='module')
+def key():
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
