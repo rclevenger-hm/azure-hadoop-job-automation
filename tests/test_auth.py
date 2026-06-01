@@ -29,3 +29,7 @@ def verify(key, values, signing_key=None, algorithm='RS256'):
     client = Mock()
     client.get_signing_key_from_jwt.return_value = SimpleNamespace(key=key.public_key())
     return authenticate('Bearer ' + token, CALLER.directory, AUDIENCE, [CALLER.subject], client)
+
+
+def test_valid_cryptographically_signed_access_token(key):
+    assert verify(key, claims()) == CALLER
