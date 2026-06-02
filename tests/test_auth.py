@@ -33,3 +33,12 @@ def verify(key, values, signing_key=None, algorithm='RS256'):
 
 def test_valid_cryptographically_signed_access_token(key):
     assert verify(key, claims()) == CALLER
+
+
+@pytest.mark.parametrize('field,value', [('aud', 'other'), ('iss', 'https://evil/'), ('tid', 'other'), ('oid', '33333333-3333-3333-3333-333333333333'), ('exp', 1), ('nbf', 9999999999), ('ver', '1.0')])
+def test_invalid_claims_rejected(key, field, value):
+    data = claims()
+    data[field] = value
+    with pytest.raises(ApiError) as error:
+        verify(key, data)
+    assert error.value.status == 401
