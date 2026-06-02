@@ -42,3 +42,9 @@ def test_invalid_claims_rejected(key, field, value):
     with pytest.raises(ApiError) as error:
         verify(key, data)
     assert error.value.status == 401
+
+
+def test_forged_signature_rejected(key):
+    other = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    with pytest.raises(ApiError):
+        verify(key, claims(), other)
