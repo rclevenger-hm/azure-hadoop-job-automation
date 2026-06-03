@@ -48,3 +48,8 @@ def test_forged_signature_rejected(key):
     other = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     with pytest.raises(ApiError):
         verify(key, claims(), other)
+
+
+def test_wrong_algorithm_rejected(key):
+    with pytest.raises(ApiError):
+        verify(key, claims(), 'x'*64, 'HS256')
