@@ -53,3 +53,11 @@ def test_forged_signature_rejected(key):
 def test_wrong_algorithm_rejected(key):
     with pytest.raises(ApiError):
         verify(key, claims(), 'x'*64, 'HS256')
+
+
+@pytest.mark.parametrize('field', ['exp', 'iat', 'nbf', 'oid', 'tid', 'sub', 'aud'])
+def test_missing_required_claim_rejected(key, field):
+    data = claims()
+    del data[field]
+    with pytest.raises(ApiError):
+        verify(key, data)
