@@ -61,3 +61,11 @@ def test_missing_required_claim_rejected(key, field):
     del data[field]
     with pytest.raises(ApiError):
         verify(key, data)
+
+
+@pytest.mark.parametrize('header', [None, '', 'Basic abc', 'Bearer ' + 'x'*16385])
+def test_invalid_header_never_fetches_key(header):
+    client = Mock()
+    with pytest.raises(ApiError):
+        authenticate(header, CALLER.directory, AUDIENCE, [CALLER.subject], client)
+    client.get_signing_key_from_jwt.assert_not_called()
