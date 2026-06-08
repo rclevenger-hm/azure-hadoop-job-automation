@@ -24,3 +24,12 @@ def api(env, monkeypatch):
         value, status, response_headers = handlers.api_handler(request)
         return json.loads(value), status, response_headers
     return call
+
+
+def test_api_submit_replay_history_usage_and_status(api, payload):
+    first, status, headers = api('POST', '/jobs', payload)
+    assert status == 202 and headers['Cache-Control'] == 'no-store'
+    assert api('POST', '/jobs', payload)[1] == 200
+    assert api('GET', '/jobs')[0]['jobs'] == [first]
+    assert api('GET', '/jobs/' + first['job_id'])[0] == first
+    assert api('GET', '/usage')[0]['jobs'] == 1
