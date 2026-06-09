@@ -33,3 +33,10 @@ def test_api_submit_replay_history_usage_and_status(api, payload):
     assert api('GET', '/jobs')[0]['jobs'] == [first]
     assert api('GET', '/jobs/' + first['job_id'])[0] == first
     assert api('GET', '/usage')[0]['jobs'] == 1
+
+
+def test_cancel_and_log_routes(api, env, payload):
+    job = create(env, payload)
+    assert api('POST', f"/jobs/{job['job_id']}/cancel")[0]['status'] == 'CANCELLED'
+    env.backend.logs.return_value = {'text': 'bounded'}
+    assert api('GET', f"/jobs/{job['job_id']}/logs", query={'stream': 'stderr', 'limit': '20'})[0] == {'text': 'bounded'}
