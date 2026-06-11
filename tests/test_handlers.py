@@ -45,3 +45,8 @@ def test_cancel_and_log_routes(api, env, payload):
 @pytest.mark.parametrize('method,path,query,status', [('GET', '/bad', {}, 404), ('GET', '/jobs', {'limit':'0'}, 400), ('GET', '/jobs', {'status':'BAD'}, 400), ('GET', '/jobs/no', {}, 400)])
 def test_bad_routes_and_queries(api, method, path, query, status):
     assert api(method, path, query=query)[1] == status
+
+
+def test_content_type_and_body_limit(api, payload):
+    assert api('POST', '/jobs', payload, headers={'Content-Type':'text/plain'})[1] == 415
+    assert api('POST', '/jobs', {'huge':'x'*65537})[1] == 413
