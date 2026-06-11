@@ -40,3 +40,8 @@ def test_cancel_and_log_routes(api, env, payload):
     assert api('POST', f"/jobs/{job['job_id']}/cancel")[0]['status'] == 'CANCELLED'
     env.backend.logs.return_value = {'text': 'bounded'}
     assert api('GET', f"/jobs/{job['job_id']}/logs", query={'stream': 'stderr', 'limit': '20'})[0] == {'text': 'bounded'}
+
+
+@pytest.mark.parametrize('method,path,query,status', [('GET', '/bad', {}, 404), ('GET', '/jobs', {'limit':'0'}, 400), ('GET', '/jobs', {'status':'BAD'}, 400), ('GET', '/jobs/no', {}, 400)])
+def test_bad_routes_and_queries(api, method, path, query, status):
+    assert api(method, path, query=query)[1] == status
