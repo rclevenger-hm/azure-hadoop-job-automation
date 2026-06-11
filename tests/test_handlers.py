@@ -50,3 +50,9 @@ def test_bad_routes_and_queries(api, method, path, query, status):
 def test_content_type_and_body_limit(api, payload):
     assert api('POST', '/jobs', payload, headers={'Content-Type':'text/plain'})[1] == 415
     assert api('POST', '/jobs', {'huge':'x'*65537})[1] == 413
+
+
+def test_internal_error_redaction(api, env, capsys):
+    env.store.request_limit = lambda _: (_ for _ in ()).throw(RuntimeError('password=secret'))
+    result, status, _ = api('GET', '/usage')
+    assert status == 503 and 'secret' not in json.dumps(result) + capsys.readouterr().out
