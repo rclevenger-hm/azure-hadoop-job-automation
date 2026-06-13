@@ -56,3 +56,9 @@ def test_internal_error_redaction(api, env, capsys):
     env.store.request_limit = lambda _: (_ for _ in ()).throw(RuntimeError('password=secret'))
     result, status, _ = api('GET', '/usage')
     assert status == 503 and 'secret' not in json.dumps(result) + capsys.readouterr().out
+
+
+def test_authentication_runs_before_database(api, env, monkeypatch):
+    monkeypatch.setattr(handlers, 'authenticate', lambda *a: (_ for _ in ()).throw(ApiError(401, 'UNAUTHENTICATED', 'Denied')))
+    assert api('GET', '/usage')[1] == 401
+    assert env.db.data == {}
