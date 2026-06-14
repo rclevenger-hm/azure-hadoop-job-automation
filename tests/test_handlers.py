@@ -62,3 +62,13 @@ def test_authentication_runs_before_database(api, env, monkeypatch):
     monkeypatch.setattr(handlers, 'authenticate', lambda *a: (_ for _ in ()).throw(ApiError(401, 'UNAUTHENTICATED', 'Denied')))
     assert api('GET', '/usage')[1] == 401
     assert env.db.data == {}
+
+
+def test_worker_redelivery_and_reconciliation(api, env, payload):
+    job = create(env, payload)
+    raw = json.dumps(message(job)).encode()
+    handlers.worker_handler(raw)
+    handlers.worker_handler(raw)
+    env.backend.submit.assert_called_once()
+    env.clock[0] += 121
+    assert handlers.reconcile_handler()['processed'] == 1
