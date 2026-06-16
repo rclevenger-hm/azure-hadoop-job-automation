@@ -78,3 +78,17 @@ def test_worker_redelivery_and_reconciliation(api, env, payload):
 def test_malformed_queue_message_is_not_acknowledged(api, raw):
     with pytest.raises((ValueError, ApiError)):
         handlers.worker_handler(raw)
+
+
+@pytest.mark.parametrize('role,names', [('api', {'api'}), ('worker', {'dispatch','reconcile'})])
+def test_real_functions_indexing_is_role_scoped(monkeypatch, role, names):
+    monkeypatch.setenv('APP_ROLE', role)
+    sys.modules.pop('function_app', None)
+    module = importlib.import_module('function_app')
+    functions = module.app.get_functions()
+    assert {f.get_function_name() for f in functions} == names
+    bindings = [b for f in functions for b in f.get_dict_repr()['bindings']]
+    if role == 'worker':
+        assert any(b.get('queueName') == 'jobs' and b.get('connection') == 'JobQueue' for b in bindings)
+    else:
+        assert any(b.get('route') == '{*path}' for b in bindings)
