@@ -72,3 +72,9 @@ def test_worker_redelivery_and_reconciliation(api, env, payload):
     env.backend.submit.assert_called_once()
     env.clock[0] += 121
     assert handlers.reconcile_handler()['processed'] == 1
+
+
+@pytest.mark.parametrize('raw', [b'[]', b'{}', b'x'*1025, b'{"tenant":"bad","job_id":"bad"}'])
+def test_malformed_queue_message_is_not_acknowledged(api, raw):
+    with pytest.raises((ValueError, ApiError)):
+        handlers.worker_handler(raw)
