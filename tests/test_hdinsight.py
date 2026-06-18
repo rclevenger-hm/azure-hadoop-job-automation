@@ -11,3 +11,9 @@ from app.validation import ApiError
 from conftest import create, remote
 
 
+@pytest.fixture
+def native():
+    session = MagicMock(spec=requests.Session)
+    secret = Mock()
+    secret.password.return_value = 'never-log-password'
+    return Hdinsight(secret, session=session)
