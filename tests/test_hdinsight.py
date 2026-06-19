@@ -17,3 +17,10 @@ def native():
     secret = Mock()
     secret.password.return_value = 'never-log-password'
     return Hdinsight(secret, session=session)
+
+
+def reply(native, value, status=200):
+    response = native.session.request.return_value.__enter__.return_value
+    response.status_code = status
+    response.iter_content.return_value = [json.dumps(value).encode()]
+    return response
