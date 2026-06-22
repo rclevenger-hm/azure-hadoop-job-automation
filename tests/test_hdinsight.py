@@ -41,3 +41,11 @@ def test_real_requests_form_preserves_argument_boundaries(native, env, payload):
     assert kw['allow_redirects'] is False and kw['timeout'] == (3, 8)
     assert kw['auth'] == ('admin', 'never-log-password')
     native.session.mount.assert_called_once()
+
+
+@pytest.mark.parametrize('status', [301, 302, 400, 401, 404, 429, 500, 503])
+def test_non_success_never_retried(native, env, payload, status):
+    reply(native, {}, status)
+    with pytest.raises(RuntimeError):
+        native.submit(create(env, payload))
+    native.session.request.assert_called_once()
