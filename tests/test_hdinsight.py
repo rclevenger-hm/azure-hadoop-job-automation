@@ -49,3 +49,10 @@ def test_non_success_never_retried(native, env, payload, status):
     with pytest.raises(RuntimeError):
         native.submit(create(env, payload))
     native.session.request.assert_called_once()
+
+
+@pytest.mark.parametrize('id', ['http://evil', 'job_1_2/../../x', 'wrong', None])
+def test_ambiguous_submission_identity(native, env, payload, id):
+    reply(native, {'id': id})
+    with pytest.raises(RemoteMismatch):
+        native.submit(create(env, payload))
