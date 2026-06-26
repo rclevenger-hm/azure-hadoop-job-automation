@@ -56,3 +56,14 @@ def test_ambiguous_submission_identity(native, env, payload, id):
     reply(native, {'id': id})
     with pytest.raises(RemoteMismatch):
         native.submit(create(env, payload))
+
+
+def test_response_size_and_error_envelopes(native, env, payload):
+    job = create(env, payload)
+    response = reply(native, {})
+    response.iter_content.return_value = [b'x' * (1024 * 1024 + 1)]
+    with pytest.raises(RuntimeError):
+        native.submit(job)
+    reply(native, {'error': 'sensitive internals'})
+    with pytest.raises(RuntimeError, match='reported an error'):
+        native.submit(job)
