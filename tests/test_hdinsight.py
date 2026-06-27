@@ -67,3 +67,12 @@ def test_response_size_and_error_envelopes(native, env, payload):
     reply(native, {'error': 'sensitive internals'})
     with pytest.raises(RuntimeError, match='reported an error'):
         native.submit(job)
+
+
+@pytest.mark.parametrize('field,value', [('jar', 'different'), ('class', 'different'), ('arg', ['different']), ('statusdir', 'different')])
+def test_remote_provenance_requires_entire_request(native, env, payload, field, value):
+    job = create(env, payload)
+    result = remote(job)
+    result['userargs'][field] = value
+    with pytest.raises(RemoteMismatch):
+        native.verify(job, result, result['id'])
