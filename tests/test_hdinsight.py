@@ -76,3 +76,13 @@ def test_remote_provenance_requires_entire_request(native, env, payload, field, 
     result['userargs'][field] = value
     with pytest.raises(RemoteMismatch):
         native.verify(job, result, result['id'])
+
+
+def test_cancel_checks_provenance_before_delete(native, env, payload):
+    job = create(env, payload)
+    job['remote_id'] = 'job_123_0001'
+    native.call = Mock(return_value=remote(job, id='job_999_0001'))
+    with pytest.raises(RemoteMismatch):
+        native.cancel(job)
+    assert native.call.call_count == 1
+    assert native.call.call_args.args[1] == 'GET'
