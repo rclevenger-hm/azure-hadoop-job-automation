@@ -86,3 +86,12 @@ def test_cancel_checks_provenance_before_delete(native, env, payload):
         native.cancel(job)
     assert native.call.call_count == 1
     assert native.call.call_args.args[1] == 'GET'
+
+
+def test_find_checks_exact_status_directory_and_all_inputs(native, env, payload):
+    job = create(env, payload)
+    unrelated = remote(job, id='job_123_0001')
+    unrelated['userargs']['statusdir'] = 'unrelated'
+    matched = remote(job, id='job_123_0002')
+    native.call = Mock(side_effect=[[{'id': unrelated['id']}, {'id': matched['id']}], unrelated, matched])
+    assert native.find(job) == ([matched['id']], '')
