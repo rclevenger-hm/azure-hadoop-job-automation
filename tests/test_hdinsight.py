@@ -103,3 +103,11 @@ def test_full_page_retains_scan_marker_and_previous_matches(native, env, payload
     ids = [f'job_123_000{i}' for i in range(1, 6)]
     native.call = Mock(side_effect=[[{'id': id} for id in ids], *[{'userargs': {}} for _ in ids]])
     assert native.find(job) == (['job_123_0000'], ids[-1])
+
+
+def test_remote_page_must_progress(native, env, payload):
+    job = create(env, payload)
+    job['scan_marker'] = 'job_123_0002'
+    native.call = Mock(return_value=[{'id': 'job_123_0001'}])
+    with pytest.raises(RemoteMismatch):
+        native.find(job)
