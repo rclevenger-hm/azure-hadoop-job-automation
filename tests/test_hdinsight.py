@@ -95,3 +95,11 @@ def test_find_checks_exact_status_directory_and_all_inputs(native, env, payload)
     matched = remote(job, id='job_123_0002')
     native.call = Mock(side_effect=[[{'id': unrelated['id']}, {'id': matched['id']}], unrelated, matched])
     assert native.find(job) == ([matched['id']], '')
+
+
+def test_full_page_retains_scan_marker_and_previous_matches(native, env, payload):
+    job = create(env, payload)
+    job['scan_matches'] = ['job_123_0000']
+    ids = [f'job_123_000{i}' for i in range(1, 6)]
+    native.call = Mock(side_effect=[[{'id': id} for id in ids], *[{'userargs': {}} for _ in ids]])
+    assert native.find(job) == (['job_123_0000'], ids[-1])
