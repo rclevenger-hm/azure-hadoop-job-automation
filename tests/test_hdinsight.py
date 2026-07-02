@@ -111,3 +111,8 @@ def test_remote_page_must_progress(native, env, payload):
     native.call = Mock(return_value=[{'id': 'job_123_0001'}])
     with pytest.raises(RemoteMismatch):
         native.find(job)
+
+
+@pytest.mark.parametrize('state,exit_value,want', [('PREP', None, 'SUBMITTED'), ('RUNNING', None, 'RUNNING'), ('SUCCEEDED', None, 'RUNNING'), ('SUCCEEDED', 0, 'SUCCEEDED'), ('SUCCEEDED', 2, 'FAILED'), ('FAILED', None, 'FAILED'), ('KILLED', None, 'CANCELLED')])
+def test_launcher_and_child_exit_state(native, env, payload, state, exit_value, want):
+    assert native.state(remote(create(env, payload), state=state, exit_value=exit_value)) == want
