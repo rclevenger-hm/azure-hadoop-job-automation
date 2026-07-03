@@ -122,3 +122,18 @@ def test_numeric_state_and_unknown_states(native):
     assert native.state({'status': {'runState': 2}, 'exitValue': 0}) == 'SUCCEEDED'
     with pytest.raises(RuntimeError):
         native.state({'status': {'state': 'NEW_UNKNOWN'}})
+
+
+def test_logs_are_bounded_and_derived_from_durable_statusdir(native, env, payload):
+    job = create(env, payload)
+    job['remote_id'] = 'job_123_0001'
+    client = MagicMock()
+    blob = client.__enter__.return_value.get_blob_client.return_value
+    blob.get_blob_properties.return_value = SimpleNamespace(size=5000000)
+    blob.download_blob.return_value.readall.return_value = b'A' * 33
+    native.blob_factory = Mock(return_value=client)
+    result = native.logs(job, 'stderr', 32)
+    assert result['truncated'] and result['text'] == 'A' * 32
+    blob.download_blob.assert_called_once_with(offset=0, length=33, max_concurrency=1)
+    client.__enter__.return_value.get_blob_client.assert_called_once_with('jobs', f"status/{job['submission_id']}/stderr")
+    native.session.request.assert_not_called()
