@@ -137,3 +137,17 @@ def test_logs_are_bounded_and_derived_from_durable_statusdir(native, env, payloa
     blob.download_blob.assert_called_once_with(offset=0, length=33, max_concurrency=1)
     client.__enter__.return_value.get_blob_client.assert_called_once_with('jobs', f"status/{job['submission_id']}/stderr")
     native.session.request.assert_not_called()
+
+
+def test_missing_logs_and_invalid_stream(native, env, payload):
+    job = create(env, payload)
+    with pytest.raises(ApiError) as error:
+        native.logs(job, 'stdout', 32)
+    assert error.value.status == 409
+    job['remote_id'] = 'job_123_0001'
+    with pytest.raises(ApiError):
+        native.logs(job, '../../secrets', 32)
+    native.blob_factory = Mock(side_effect=ResourceNotFoundError())
+    with pytest.raises(ApiError) as error:
+        native.logs(job, 'stdout', 32)
+    assert error.value.status == 404
