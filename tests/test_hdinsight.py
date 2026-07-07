@@ -151,3 +151,14 @@ def test_missing_logs_and_invalid_stream(native, env, payload):
     with pytest.raises(ApiError) as error:
         native.logs(job, 'stdout', 32)
     assert error.value.status == 404
+
+
+def test_version_pinned_secret_cached_and_never_listed(env, payload, monkeypatch):
+    job = create(env, payload)
+    client = MagicMock()
+    client.__enter__.return_value.get_secret.return_value.value = 'password'
+    monkeypatch.setattr('app.hdinsight.SecretClient', Mock(return_value=client))
+    secrets = Secrets(Mock())
+    assert secrets.password(job['profile']['secret_id']) == 'password'
+    assert secrets.password(job['profile']['secret_id']) == 'password'
+    client.__enter__.return_value.get_secret.assert_called_once_with('cluster-password', 'a' * 32)
