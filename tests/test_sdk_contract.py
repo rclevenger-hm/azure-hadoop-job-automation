@@ -14,3 +14,10 @@ def test_sdk_serializes_compare_and_swap_batch():
     assert result[1]['operationType'] == 'Replace'
     assert result[1]['ifMatch'] == 'expected'
     assert result[1]['resourceBody']['units'] == 2
+
+
+def test_queue_sdk_defaults_to_unencoded_text():
+    # Azure Functions is configured to match this no-base64 policy in host.json.
+    client = QueueClient('https://sample.queue.core.windows.net', 'jobs', credential=AzureNamedKeyCredential('sample', 'ZmFrZQ=='))
+    encoded = client._message_encode_policy('{"tenant":"owner"}')
+    assert encoded == '{"tenant":"owner"}'
