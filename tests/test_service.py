@@ -25,3 +25,13 @@ def test_timeout_after_start_becomes_unknown_never_resubmits(env, payload):
     assert current['status'] == 'SUBMISSION_UNKNOWN'
     assert current['reason'] == 'SUBMISSION_OUTCOME_UNKNOWN'
     env.backend.submit.assert_called_once()
+
+
+def test_crashed_submitter_reconciles_by_exact_name(env, payload):
+    job = create(env, payload)
+    env.store.replace(job, status='SUBMITTING', submitted_at=env.clock[0])
+    env.clock[0] += 121
+    env.backend.find.return_value = (['job_1780315200000_0002'], '')
+    env.service.reconcile_one(job['tenant'], job['job_id'])
+    assert env.store.get(job['tenant'], job['job_id'])['remote_id'] == 'job_1780315200000_0002'
+    env.backend.submit.assert_not_called()
