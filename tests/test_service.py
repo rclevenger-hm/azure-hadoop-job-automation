@@ -44,3 +44,17 @@ def test_missing_remote_step_requires_review_without_retry(env, payload):
     env.service.reconcile_one(job['tenant'], job['job_id'])
     assert env.store.get(job['tenant'], job['job_id'])['status'] == 'NEEDS_REVIEW'
     env.backend.submit.assert_not_called()
+
+
+def test_reconciliation_persists_page_and_matches(env, payload):
+    job = create(env, payload)
+    env.store.replace(job, status='SUBMITTING', submitted_at=env.clock[0])
+    env.clock[0] += 121
+    env.backend.find.return_value = (['job_1780315200000_0003'], 'next')
+    env.service.reconcile_one(job['tenant'], job['job_id'])
+    first = env.store.get(job['tenant'], job['job_id'])
+    assert first['scan_marker'] == 'next' and 'remote_id' not in first
+    env.clock[0] += 31
+    env.backend.find.return_value = (['job_1780315200000_0003'], '')
+    env.service.reconcile_one(job['tenant'], job['job_id'])
+    assert env.store.get(job['tenant'], job['job_id'])['remote_id'] == 'job_1780315200000_0003'
