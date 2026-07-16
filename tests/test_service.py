@@ -58,3 +58,12 @@ def test_reconciliation_persists_page_and_matches(env, payload):
     env.backend.find.return_value = (['job_1780315200000_0003'], '')
     env.service.reconcile_one(job['tenant'], job['job_id'])
     assert env.store.get(job['tenant'], job['job_id'])['remote_id'] == 'job_1780315200000_0003'
+
+
+def test_multiple_correlation_matches_require_review(env, payload):
+    job = create(env, payload)
+    env.store.replace(job, status='SUBMITTING', submitted_at=env.clock[0])
+    env.clock[0] += 121
+    env.backend.find.return_value = (['job_1780315200000_0003', 'job_1780315200000_0004'], '')
+    env.service.reconcile_one(job['tenant'], job['job_id'])
+    assert env.store.get(job['tenant'], job['job_id'])['reason'] == 'MULTIPLE_MATCHING_JOBS'
