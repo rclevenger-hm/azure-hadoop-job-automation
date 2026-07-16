@@ -67,3 +67,16 @@ def test_multiple_correlation_matches_require_review(env, payload):
     env.backend.find.return_value = (['job_1780315200000_0003', 'job_1780315200000_0004'], '')
     env.service.reconcile_one(job['tenant'], job['job_id'])
     assert env.store.get(job['tenant'], job['job_id'])['reason'] == 'MULTIPLE_MATCHING_JOBS'
+
+
+def test_queue_publish_failure_is_recoverable(env, payload, monkeypatch):
+    original = env.store.enqueue
+    monkeypatch.setattr(env.store, 'enqueue', lambda _: (_ for _ in ()).throw(RuntimeError('queue down')))
+    with pytest.raises(RuntimeError):
+        create(env, payload)
+    jobs, _ = env.store.history(CALLER.tenant)
+    assert len(jobs) == 1 and jobs[0]['status'] == 'QUEUED'
+    monkeypatch.setattr(env.store, 'enqueue', original)
+    env.clock[0] += 121
+    env.service.reconcile_one(jobs[0]['tenant'], jobs[0]['job_id'])
+    env.queue.send_message.assert_called()
