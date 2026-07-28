@@ -14,3 +14,11 @@ def test_admission_is_idempotent_and_counts_once(env, payload):
     second = create(env, payload)
     assert first == second
     assert env.store.usage(CALLER.tenant)['jobs'] == 1
+
+
+def test_conflicting_key_does_not_consume_quota(env, payload):
+    create(env, payload)
+    payload['arguments'] = ['different']
+    with pytest.raises(ApiError, match='different'):
+        create(env, payload)
+    assert env.store.usage(CALLER.tenant)['jobs'] == 1
