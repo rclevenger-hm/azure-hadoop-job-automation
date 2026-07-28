@@ -174,3 +174,18 @@ def test_expired_delivery_cannot_execute_before_recovery_runs(env, payload):
     env.service.process(message(job))
     env.backend.submit.assert_not_called()
     assert env.store.get(job['tenant'], job['job_id'])['status'] == 'FAILED'
+
+
+def test_successful_remote_submit_with_failed_metadata_write_is_not_repeated(env, payload, monkeypatch):
+    job = create(env, payload)
+    attach = env.service.attach
+    monkeypatch.setattr(env.service, 'attach', lambda *a, **kw: (_ for _ in ()).throw(RuntimeError('database unavailable')))
+    with pytest.raises(RuntimeError):
+        env.service.process(message(job))
+    monkeypatch.setattr(env.service, 'attach', attach)
+    env.service.process(message(job))
+    env.backend.submit.assert_called_once()
+    env.clock[0] += 121
+    env.backend.find.return_value = (['job_1780315200000_0001'], '')
+    env.service.reconcile_one(job['tenant'], job['job_id'])
+    assert env.store.get(job['tenant'], job['job_id'])['remote_id'] == 'job_1780315200000_0001'
