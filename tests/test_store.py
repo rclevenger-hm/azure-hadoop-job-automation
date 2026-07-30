@@ -29,3 +29,16 @@ def test_concurrent_same_key_only_admitted_once(env, payload):
         jobs = list(pool.map(lambda _: create(env, payload), range(24)))
     assert len({j['submission_id'] for j in jobs}) == 1
     assert env.store.usage(CALLER.tenant)['jobs'] == 1
+
+
+def test_daily_quota_atomic_under_competing_keys(env, payload):
+    env.store.daily_limit = 3
+    def submit(i):
+        try:
+            return create(env, payload, f'unique-key-{i}')
+        except ApiError:
+            return None
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(submit, range(24)))
+    assert sum(r is not None for r in results) == 3
+    assert env.store.usage(CALLER.tenant)['jobs'] == 3
