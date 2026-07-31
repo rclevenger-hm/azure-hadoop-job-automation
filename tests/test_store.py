@@ -42,3 +42,9 @@ def test_daily_quota_atomic_under_competing_keys(env, payload):
         results = list(pool.map(submit, range(24)))
     assert sum(r is not None for r in results) == 3
     assert env.store.usage(CALLER.tenant)['jobs'] == 3
+
+
+def test_compare_and_swap_does_not_lose_cancellation(env, payload):
+    old = create(env, payload)
+    env.store.replace(old, status='CANCELLED', cancel_requested=True)
+    assert env.store.replace(old, status='SUBMITTING') is None
