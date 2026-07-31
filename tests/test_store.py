@@ -48,3 +48,10 @@ def test_compare_and_swap_does_not_lose_cancellation(env, payload):
     old = create(env, payload)
     env.store.replace(old, status='CANCELLED', cancel_requested=True)
     assert env.store.replace(old, status='SUBMITTING') is None
+
+
+def test_active_jobs_never_expire_automatically(env, payload):
+    job = create(env, payload)
+    assert job['ttl'] == -1 and 'expires_at' not in job
+    env.clock[0] += 365 * 86400
+    assert env.store.get(CALLER.tenant, job['job_id'])
