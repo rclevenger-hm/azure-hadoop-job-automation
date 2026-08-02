@@ -65,3 +65,15 @@ def test_terminal_ttl_and_expired_key(env, payload):
     assert env.store.get(CALLER.tenant, job['job_id']) is None
     with pytest.raises(ApiError, match='fresh'):
         create(env, payload)
+
+
+def test_request_rate_and_daily_counters_separate(env, payload):
+    env.store.rate_limit = 2
+    env.store.request_limit(CALLER.tenant)
+    env.store.request_limit(CALLER.tenant)
+    with pytest.raises(ApiError) as e:
+        env.store.request_limit(CALLER.tenant)
+    assert e.value.status == 429
+    assert env.store.usage(CALLER.tenant)['jobs'] == 0
+    env.clock[0] += 60
+    env.store.request_limit(CALLER.tenant)
