@@ -55,3 +55,13 @@ def test_active_jobs_never_expire_automatically(env, payload):
     assert job['ttl'] == -1 and 'expires_at' not in job
     env.clock[0] += 365 * 86400
     assert env.store.get(CALLER.tenant, job['job_id'])
+
+
+def test_terminal_ttl_and_expired_key(env, payload):
+    job = create(env, payload)
+    result = env.store.replace(job, status='SUCCEEDED')
+    assert result['ttl'] == 30 * 86400 and 'active_shard' not in result
+    env.clock[0] += 30 * 86400
+    assert env.store.get(CALLER.tenant, job['job_id']) is None
+    with pytest.raises(ApiError, match='fresh'):
+        create(env, payload)
