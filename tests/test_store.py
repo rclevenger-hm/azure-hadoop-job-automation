@@ -83,3 +83,10 @@ def test_utc_day_resets_allowance(env, payload):
     create(env, payload)
     env.clock[0] += 86400
     assert env.store.usage(CALLER.tenant)['jobs'] == 0
+
+
+def test_queue_only_carries_opaque_ids(env, payload):
+    job = create(env, payload)
+    args, kwargs = env.queue.send_message.call_args
+    assert json.loads(args[0]) == {'tenant': job['tenant'], 'job_id': job['job_id']}
+    assert kwargs == {'time_to_live': 86400}
