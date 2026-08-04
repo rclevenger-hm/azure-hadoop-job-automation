@@ -90,3 +90,15 @@ def test_queue_only_carries_opaque_ids(env, payload):
     args, kwargs = env.queue.send_message.call_args
     assert json.loads(args[0]) == {'tenant': job['tenant'], 'job_id': job['job_id']}
     assert kwargs == {'time_to_live': 86400}
+
+
+def test_history_cursor_is_scoped_and_no_equal_time_duplicates(env, payload):
+    for i in range(7):
+        create(env, payload, f'page-key-{i}')
+    first, cursor = env.store.history(CALLER.tenant, limit=3)
+    second, next_cursor = env.store.history(CALLER.tenant, limit=3, cursor=cursor)
+    third, end = env.store.history(CALLER.tenant, limit=3, cursor=next_cursor)
+    assert len({j['id'] for j in first + second + third}) == 7 and end is None
+    for tenant, status in [(OTHER.tenant, None), (CALLER.tenant, 'RUNNING')]:
+        with pytest.raises(ApiError):
+            env.store.history(tenant, cursor=cursor, status=status)
