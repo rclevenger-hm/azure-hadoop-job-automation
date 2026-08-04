@@ -77,3 +77,9 @@ def test_request_rate_and_daily_counters_separate(env, payload):
     assert env.store.usage(CALLER.tenant)['jobs'] == 0
     env.clock[0] += 60
     env.store.request_limit(CALLER.tenant)
+
+
+def test_utc_day_resets_allowance(env, payload):
+    create(env, payload)
+    env.clock[0] += 86400
+    assert env.store.usage(CALLER.tenant)['jobs'] == 0
