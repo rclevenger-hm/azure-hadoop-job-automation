@@ -102,3 +102,9 @@ def test_history_cursor_is_scoped_and_no_equal_time_duplicates(env, payload):
     for tenant, status in [(OTHER.tenant, None), (CALLER.tenant, 'RUNNING')]:
         with pytest.raises(ApiError):
             env.store.history(tenant, cursor=cursor, status=status)
+
+
+@pytest.mark.parametrize('cursor', ['bad', 'x'*2049, 'e30=', 'bnVsbA=='])
+def test_malformed_cursor_fails_closed(env, cursor):
+    with pytest.raises(ApiError):
+        env.store.history(CALLER.tenant, cursor=cursor)
