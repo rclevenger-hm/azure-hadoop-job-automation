@@ -124,3 +124,14 @@ def test_transient_failure_is_not_reported_as_admission(env, payload, monkeypatc
     with pytest.raises(CosmosHttpResponseError):
         create(env, payload)
     assert env.store.usage(CALLER.tenant)['jobs'] == 0
+
+
+def test_transaction_rolls_back_job_when_counter_conflicts(env, payload):
+    first = create(env, payload)
+    counter = env.store.read(CALLER.tenant, 'daily:' + env.store.date())
+    proposed = copy.deepcopy(first)
+    proposed['id'] = proposed['job_id'] = key_id('new-key-123', CALLER.tenant)
+    counter['_etag'] = 'obsolete'
+    with pytest.raises(Exception):
+        env.db.execute_item_batch([('create', (proposed,)), env.store.counter_operation(counter, counter)], CALLER.tenant)
+    assert env.store.get(CALLER.tenant, proposed['id']) is None
