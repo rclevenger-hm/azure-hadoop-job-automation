@@ -108,3 +108,12 @@ def test_history_cursor_is_scoped_and_no_equal_time_duplicates(env, payload):
 def test_malformed_cursor_fails_closed(env, cursor):
     with pytest.raises(ApiError):
         env.store.history(CALLER.tenant, cursor=cursor)
+
+
+def test_history_filters_status_and_expiry(env, payload):
+    one = create(env, payload, 'first-key')
+    create(env, payload, 'second-key')
+    env.store.replace(one, status='SUCCEEDED')
+    assert len(env.store.history(CALLER.tenant, status='SUCCEEDED')[0]) == 1
+    env.clock[0] += 30 * 86400
+    assert len(env.store.history(CALLER.tenant)[0]) == 1
