@@ -117,3 +117,10 @@ def test_history_filters_status_and_expiry(env, payload):
     assert len(env.store.history(CALLER.tenant, status='SUCCEEDED')[0]) == 1
     env.clock[0] += 30 * 86400
     assert len(env.store.history(CALLER.tenant)[0]) == 1
+
+
+def test_transient_failure_is_not_reported_as_admission(env, payload, monkeypatch):
+    monkeypatch.setattr(env.db, 'execute_item_batch', lambda **_: (_ for _ in ()).throw(CosmosHttpResponseError(status_code=503)))
+    with pytest.raises(CosmosHttpResponseError):
+        create(env, payload)
+    assert env.store.usage(CALLER.tenant)['jobs'] == 0
