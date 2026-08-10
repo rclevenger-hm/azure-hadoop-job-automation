@@ -6,3 +6,5 @@ from app.validation import ApiError, body, integer, job_request
 from conftest import CALLER, OTHER
 
 
+def test_oci_four_fields_map_to_hdinsight_with_profile(payload, profiles):
+    assert job_request(payload, profiles, CALLER) == payload
