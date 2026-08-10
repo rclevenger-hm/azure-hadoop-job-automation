@@ -8,3 +8,10 @@ from conftest import CALLER, OTHER
 
 def test_oci_four_fields_map_to_hdinsight_with_profile(payload, profiles):
     assert job_request(payload, profiles, CALLER) == payload
+
+
+@pytest.mark.parametrize('field,value', [('job_class', 'org.Job;rm'), ('job_class', 'bad class'), ('jar_path', 'wasbs://jobs@elsewhere.blob.core.windows.net/job.jar'), ('input_path', 'abfss://jobs@yourstorage.dfs.core.windows.net/input/../secret'), ('input_path', 'abfss://jobs@yourstorage.dfs.core.windows.net/input/%2e%2e/x'), ('input_path', 'abfss://jobs@yourstorage.dfs.core.windows.net/input/x\n'), ('output_path', 'abfss://jobs@yourstorage.dfs.core.windows.net/outputx/file'), ('jar_path', None), ('arguments', 'x'), ('arguments', ['x'] * 21), ('arguments', ['x' * 1025]), ('job_class', '\ud800')])
+def test_invalid_fields_fail_before_execution(payload, profiles, field, value):
+    payload[field] = value
+    with pytest.raises(ApiError):
+        job_request(payload, profiles, CALLER)
