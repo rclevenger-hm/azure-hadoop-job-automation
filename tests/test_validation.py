@@ -59,3 +59,10 @@ def test_body_size():
 def test_pagination_bounds(value):
     with pytest.raises(ApiError):
         integer(value, 20, 100)
+
+
+@pytest.mark.parametrize('field,value', [('cluster_name', 'Invalid_CLUSTER'), ('allowed_callers', ['*']), ('jar_prefixes', ['abfss://jobs@yourstorage.dfs.core.windows.net/root']), ('status_prefix', 'https://attacker/'), ('jar_prefixes', ['abfss://jobs@yourstorage.dfs.core.windows.net/root/../']), ('input_prefixes', ['abfss://jobs@yourstorage.dfs.core.windows.net/root/*/'])])
+def test_bad_configuration_fails_closed(profiles, field, value):
+    profiles['analytics'][field] = value
+    with pytest.raises(ValueError):
+        load_profiles(json.dumps(profiles))
