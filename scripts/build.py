@@ -29,3 +29,7 @@ def main():
             output.writestr(info, data)
     (ROOT / 'build' / 'manifest.json').write_text(json.dumps({'files': hashes, 'zip_sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}, indent=2) + '\n')
     print(f'Staged {len(names)} files for managed-identity Flex deployment with remote dependency build.')
+
+
+if __name__ == '__main__':
+    main()
