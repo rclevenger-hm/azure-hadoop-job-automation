@@ -23,3 +23,7 @@ def main():
     assert host['extensions']['http']['routePrefix'] == ''
     assert not any('..' in str(p) for p in (ROOT / 'app').glob('*.py'))
     print('API, examples and trigger contracts agree.')
+
+
+if __name__ == '__main__':
+    main()
