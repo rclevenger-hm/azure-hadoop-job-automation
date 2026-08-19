@@ -47,3 +47,7 @@ def main():
     print(response.status_code, response.text)
     if response.status_code >= 300:
         raise SystemExit(1)
+
+
+if __name__ == '__main__':
+    main()
