@@ -21,3 +21,7 @@ Required fields are profile plus jar_path, job_class, input_path and output_path
 
 An Idempotency-Key of 8–128 letters, digits, dots, underscores, colons or hyphens is required. Keep it stable when the API response is lost. A key reused with different inputs returns 409. Never use a new key to work around an ambiguous remote outcome. Quotas count admissions even if a job subsequently fails or is cancelled.
 
+## Status and cancellation
+
+The API returns persisted state, not a synchronous gateway poll. The timer refreshes asynchronously, usually after the 120-second poll lease. A cancel acknowledgment means the request was accepted, not that execution stopped. NEEDS_REVIEW is an operator state and can coexist with remote activity. See ARCHITECTURE.md for transitions.
+
