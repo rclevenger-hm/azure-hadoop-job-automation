@@ -25,3 +25,7 @@ An Idempotency-Key of 8–128 letters, digits, dots, underscores, colons or hyph
 
 The API returns persisted state, not a synchronous gateway poll. The timer refreshes asynchronously, usually after the 120-second poll lease. A cancel acknowledgment means the request was accepted, not that execution stopped. NEEDS_REVIEW is an operator state and can coexist with remote activity. See ARCHITECTURE.md for transitions.
 
+## History and logs
+
+History returns at most 100 records, default 20. Cursors are bound to caller and status filter; reuse them unchanged. Records expire after configured terminal retention. Logs select stdout, stderr or exit and read from byte zero, default 16 KiB and maximum 64 KiB. A truncated flag indicates more data. These are launcher files, not all Hadoop task logs. Missing uploads return 404; jobs with unknown native identity return 409.
+
