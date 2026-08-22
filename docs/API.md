@@ -15,3 +15,9 @@ Send `Authorization: Bearer TOKEN` with an Entra v2 access token for the configu
 | GET | /jobs/{job_id}/logs | Launcher stdout, stderr or exit |
 | GET | /usage | UTC-day jobs and allowance |
 
+## Submission contract
+
+Required fields are profile plus jar_path, job_class, input_path and output_path. Optional arguments is an array of at most 20 strings, each at most 1,024 characters. Input and output must differ. Paths must be under configured canonical directory prefixes. Accepted URI schemes are abfss, wasbs and hdfs. The whole JSON body is limited to 64 KiB and combined program strings to 10,240 characters. No unknown fields are accepted.
+
+An Idempotency-Key of 8–128 letters, digits, dots, underscores, colons or hyphens is required. Keep it stable when the API response is lost. A key reused with different inputs returns 409. Never use a new key to work around an ambiguous remote outcome. Quotas count admissions even if a job subsequently fails or is cancelled.
+
