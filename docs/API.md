@@ -29,3 +29,6 @@ The API returns persisted state, not a synchronous gateway poll. The timer refre
 
 History returns at most 100 records, default 20. Cursors are bound to caller and status filter; reuse them unchanged. Records expire after configured terminal retention. Logs select stdout, stderr or exit and read from byte zero, default 16 KiB and maximum 64 KiB. A truncated flag indicates more data. These are launcher files, not all Hadoop task logs. Missing uploads return 404; jobs with unknown native identity return 409.
 
+## Errors
+
+Structured errors contain code, error and request_id. 400 denotes validation, 401 authentication, 403 profile/path authorization, 404 missing resources, 409 state/idempotency conflict, 413 oversized body, 415 content type, 429 quota and 503 dependency failure. Retry-After accompanies throttling; daily quota waits until UTC midnight. Responses contain no-store and X-Request-Id. Internal dependency details stay out of the response.
