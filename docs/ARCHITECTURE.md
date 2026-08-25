@@ -10,3 +10,9 @@ The Cosmos partition is SHA-256 of Entra tenant ID plus caller object ID. The jo
 
 A random submission ID and status directory are persisted at admission. Remote job IDs are validated before URL construction. Remote status and cancellation recheck the complete stored input identity. Active jobs have TTL -1; only terminal records expire. An expired key must not be reused; after physical TTL deletion no historical deduplication guarantee remains.
 
+## State transitions
+
+`QUEUED → SUBMITTING → SUBMITTED → RUNNING → SUCCEEDED / FAILED / CANCELLED` is the normal path. `SUBMISSION_UNKNOWN` means the POST may have succeeded. Recovery scans sorted pages of five WebHCat jobs, saves page position and matching identities, and waits for a complete scan before attaching one match. Multiple matches, mismatched provenance or a 24-hour unresolved scan require review.
+
+Cancellation before dispatch transitions directly to CANCELLED. Cancellation during or after dispatch persists intent and repeatedly requests remote cancellation until a terminal state is observed. Conditional updates preserve intent when pollers and submitters race.
+
