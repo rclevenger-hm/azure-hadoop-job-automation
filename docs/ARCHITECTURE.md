@@ -16,3 +16,7 @@ A random submission ID and status directory are persisted at admission. Remote j
 
 Cancellation before dispatch transitions directly to CANCELLED. Cancellation during or after dispatch persists intent and repeatedly requests remote cancellation until a terminal state is observed. Conditional updates preserve intent when pollers and submitters race.
 
+## Scheduling
+
+A minute timer scans 16 active shards with rotating priority and at most 25 due items per shard. ETag leases move next_check forward 120 seconds. The timer checks its remaining budget before each item. Queue leases and duplicate delivery do not bypass durable state. Poison messages stay in jobs-poison for triage; the state table independently enables recovery of legitimate jobs.
+
