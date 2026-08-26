@@ -20,3 +20,6 @@ Cancellation before dispatch transitions directly to CANCELLED. Cancellation dur
 
 A minute timer scans 16 active shards with rotating priority and at most 25 due items per shard. ETag leases move next_check forward 120 seconds. The timer checks its remaining budget before each item. Queue leases and duplicate delivery do not bypass durable state. Poison messages stay in jobs-poison for triage; the state table independently enables recovery of legitimate jobs.
 
+## Network
+
+Functions integrate with a supplied private subnet. Eight private endpoints cover host Blob/Queue storage, dispatch queue, Cosmos and both Function apps. Private DNS zones link to the supplied VNet. Existing Key Vault, log storage and HDInsight require reachable private routes or explicitly approved gateway egress. This deployment does not reconfigure existing cluster networks.
