@@ -8,3 +8,9 @@ Supply a VNet, a /27-or-larger integration subnet delegated to `Microsoft.App/en
 
 The module creates private DNS zones for Blob, Queue, Cosmos and Functions. In environments that already have centrally managed zones with those names, import/adapt the resources to use your existing zones; do not create competing links for the same namespace.
 
+## Entra registration and cluster password
+
+Create a single-tenant API application. Set `api.requestedAccessTokenVersion` to 2, expose an API URI such as `api://CLIENT-ID`, define appropriate delegated scopes/application roles and grant callers permission. For unattended callers use an application role and admin consent. Add exact caller service-principal/user **object IDs**, not application client IDs, to profiles. Audience is the API application's client GUID. The client helper uses Azure CLI credentials after `az login`; authorize that client for the exposed delegated scope.
+
+Place the cluster password in an existing RBAC-enabled Key Vault. `secret_id` is its versioned HTTPS secret URL; `secret_resource_id` is the corresponding unversioned ARM secret resource ID. Terraform never reads the password. Set `username` to the gateway account. Ensure the cluster can write to the chosen status prefix and that the API's new identity can read that container.
+
