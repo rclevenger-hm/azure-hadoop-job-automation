@@ -14,3 +14,20 @@ Create a single-tenant API application. Set `api.requestedAccessTokenVersion` to
 
 Place the cluster password in an existing RBAC-enabled Key Vault. `secret_id` is its versioned HTTPS secret URL; `secret_resource_id` is the corresponding unversioned ARM secret resource ID. Terraform never reads the password. Set `username` to the gateway account. Ensure the cluster can write to the chosen status prefix and that the API's new identity can read that container.
 
+## Terraform apply
+
+Install Terraform 1.13.5. Register Microsoft.Web, Microsoft.App, Microsoft.Storage, Microsoft.DocumentDB, Microsoft.Network, Microsoft.Insights, Microsoft.OperationalInsights, Microsoft.ManagedIdentity and Microsoft.Consumption in the subscription. Choose a Flex-compatible region with the configured ZRS/zone support.
+
+Use a private runner with DNS/routing to the storage and Function SCM endpoints. Bootstrap a remote state account separately, disable public blob access, use Entra authentication, and grant the deployment principal Blob Data Contributor on its state container. The principal also needs resource provisioning and role-assignment rights over the target resource group, supplied subnets, existing secret scopes and log containers, plus Blob/Queue Data Contributor on the new storage accounts for Terraform data-plane operations. Use scoped rights and a separate bootstrap principal where possible.
+
+```bash
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+cp terraform/backend.hcl.example terraform/backend.hcl
+# Replace every example value and set the current month's budget start date.
+terraform -chdir=terraform init -backend-config=backend.hcl
+terraform -chdir=terraform plan -out=reviewed.tfplan
+terraform -chdir=terraform apply reviewed.tfplan
+```
+
+Private endpoints are provisioned before storage containers and queues. DNS and role propagation can require a repeat apply after the permissions are effective. Do not turn on account keys or public networking to work around missing access.
+
