@@ -31,3 +31,7 @@ terraform -chdir=terraform apply reviewed.tfplan
 
 Private endpoints are provisioned before storage containers and queues. DNS and role propagation can require a repeat apply after the permissions are effective. Do not turn on account keys or public networking to work around missing access.
 
+## Publish functions
+
+Build with `python scripts/build.py`. The explicit source directory `build/function` contains only runtime code and hashed dependencies. Flex remote build installs them. Publish both apps using Microsoft Azure Functions Core Tools v4 from that directory or the repository's manual deployment workflow. Keep APP_ROLE=api/worker as provisioned; the code indexes only the intended triggers. Do not set WEBSITE_RUN_FROM_PACKAGE or SCM_DO_BUILD_DURING_DEPLOYMENT on Flex.
+
