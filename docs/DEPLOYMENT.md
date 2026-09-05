@@ -35,3 +35,9 @@ Private endpoints are provisioned before storage containers and queues. DNS and 
 
 Build with `python scripts/build.py`. The explicit source directory `build/function` contains only runtime code and hashed dependencies. Flex remote build installs them. Publish both apps using Microsoft Azure Functions Core Tools v4 from that directory or the repository's manual deployment workflow. Keep APP_ROLE=api/worker as provisioned; the code indexes only the intended triggers. Do not set WEBSITE_RUN_FROM_PACKAGE or SCM_DO_BUILD_DURING_DEPLOYMENT on Flex.
 
+## GitHub OIDC workflow
+
+Create a protected GitHub environment named `azure`, configure required reviewers, and allow only main. Register an Azure federated identity for `repo:rclevenger-hm/azure-hadoop-job-automation:environment:azure`. Install a private, dedicated Linux runner with label `azure-private`; do not run untrusted fork PRs on it.
+
+Set environment variables AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, TF_VARS_JSON (the nonsecret reviewed Terraform variables as JSON), and TF_BACKEND_HCL (remote backend configuration). Do not store cluster passwords in those variables. Run **Deploy Azure** manually from main. The workflow reruns source checks, plans/applies infrastructure, and uses Azure/functions-action with OIDC and Flex remote build. No deployment workflow runs on push.
+
