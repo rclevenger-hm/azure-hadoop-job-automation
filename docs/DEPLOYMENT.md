@@ -41,3 +41,6 @@ Create a protected GitHub environment named `azure`, configure required reviewer
 
 Set environment variables AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, TF_VARS_JSON (the nonsecret reviewed Terraform variables as JSON), and TF_BACKEND_HCL (remote backend configuration). Do not store cluster passwords in those variables. Run **Deploy Azure** manually from main. The workflow reruns source checks, plans/applies infrastructure, and uses Azure/functions-action with OIDC and Flex remote build. No deployment workflow runs on push.
 
+## Acceptance
+
+Check role assignments and private DNS, verify both apps index their triggers, then run the live acceptance checklist in VALIDATION.md. Verify one disposable Hadoop job and its output before granting production callers access. Retain the package digest and commit SHA for rollback.
