@@ -16,3 +16,7 @@ The jobs-poison queue is retained for investigation. Malformed messages need rep
 
 Cancellation is best effort. The request is durable, but Hadoop output can already have been written. Wait for native terminal state. If a poll races cancellation, the ETag protects the newer request. Cancellation that races terminal completion may be observed as SUCCEEDED or FAILED.
 
+## Retention and recovery
+
+Terminal job records expire after configured retention; active records do not expire. Daily counters last three days and rate counters two minutes. Operator-managed statusdir log storage must have a lifecycle policy consistent with job retention. Store outputs independently. On database restoration, stop the worker app, reconcile outstanding native jobs, verify admission counters, then resume deliberately.
+
