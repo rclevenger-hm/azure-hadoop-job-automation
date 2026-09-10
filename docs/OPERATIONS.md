@@ -10,3 +10,9 @@ Inspect the durable job's submission ID, exact statusdir, cluster and submitted 
 
 WebHCat job retention must exceed the 24-hour recovery window, plus operational lag. Reconciliation scans pages in ascending job ID order, so large shared histories can delay recovery. More than one matching job or non-progressing pages stops automatic attachment. Missing/temporarily unavailable already-attached jobs retain their active state and produce reconciliation error telemetry; investigate rather than treating them as failed.
 
+## Queue and cancellation
+
+The jobs-poison queue is retained for investigation. Malformed messages need repair/removal; legitimate jobs can be redispatched by the timer only while QUEUED. The hourly queue count alarm covers total queued/poison backlog; it is not an immediate per-poison-message alarm. Inspect both queues during incidents.
+
+Cancellation is best effort. The request is durable, but Hadoop output can already have been written. Wait for native terminal state. If a poll races cancellation, the ETag protects the newer request. Cancellation that races terminal completion may be observed as SUCCEEDED or FAILED.
+
