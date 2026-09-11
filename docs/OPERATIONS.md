@@ -20,3 +20,7 @@ Cancellation is best effort. The request is durable, but Hadoop output can alrea
 
 Terminal job records expire after configured retention; active records do not expire. Daily counters last three days and rate counters two minutes. Operator-managed statusdir log storage must have a lifecycle policy consistent with job retention. Store outputs independently. On database restoration, stop the worker app, reconcile outstanding native jobs, verify admission counters, then resume deliberately.
 
+## Alerts and diagnosis
+
+Application Insights receives structured api_request, api_error, job_state and reconcile_complete events. Alerts flag API dependency errors, unresolved jobs and reconciliation failures. Check Function execution errors for timer/queue exceptions, queue counts and Cosmos throttling. Resource-group budget emails are advisory and do not cap HDInsight costs.
+
