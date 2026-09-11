@@ -24,3 +24,6 @@ Terminal job records expire after configured retention; active records do not ex
 
 Application Insights receives structured api_request, api_error, job_state and reconcile_complete events. Alerts flag API dependency errors, unresolved jobs and reconciliation failures. Check Function execution errors for timer/queue exceptions, queue counts and Cosmos throttling. Resource-group budget emails are advisory and do not cap HDInsight costs.
 
+## Rollback
+
+Redeploy an earlier package only if it understands current state fields. Do not destroy the database or clear queues for rollback. Deployment is manual from a protected main branch and uses a fixed source commit. Record the package digest in the deployment log.
