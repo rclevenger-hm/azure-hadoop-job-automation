@@ -14,3 +14,8 @@ Reference snapshots inspected on 2026-10-07: [OCI](https://github.com/rclevenger
 | Logs | Bounded synchronous streams | Archived step / driver logs | Bounded launcher stdout, stderr, exit |
 | Infrastructure | Function setup guidance | Terraform control plane | Private Functions, queue, Cosmos, identity, alerts, budget |
 
+## Differences that matter
+
+This is functional parity for native Hadoop submission, not a claim that cloud services are identical. GCP has a native request UUID and supports bounded safe retries; WebHCat has no idempotency token, so Azure deliberately never repeats a claimed POST. Launcher logs do not include all YARN task logs, EMR controller logs, or Dataproc driver segments. Operators can use cluster-native tooling for full task diagnostics. Arbitrary JARs remain trusted code with the cluster account's storage permissions.
+
+The Azure design improves on the synchronous OCI baseline with durable long-running job management, managed control-plane credentials, per-caller admission controls and recovery. Live-cluster parity requires the documented Azure acceptance tests.
