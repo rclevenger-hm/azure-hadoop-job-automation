@@ -18,3 +18,6 @@ Allowlisted URI prefixes restrict selection, not what arbitrary Hadoop code can 
 
 Passwords, bearer tokens, payloads, remote response bodies and raw exceptions are not logged. Responses use generic dependency errors and request IDs. Status directories use unguessable submission IDs and log requests select one fixed filename, with a 64 KiB maximum. Redirects are disabled on the authenticated HDInsight connection. TLS certificate validation is never disabled.
 
+## State protection
+
+Continuous Cosmos backup and deletion guards protect control state. Recovery of a stale database backup can lose evidence of remote submissions; pause dispatch and reconcile against HDInsight before resuming. An idempotency key only works within the retained record's lifetime. Do not delete active job records as a retry mechanism.
