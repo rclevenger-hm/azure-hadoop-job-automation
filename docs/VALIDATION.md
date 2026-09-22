@@ -6,3 +6,7 @@ Python tests exercise real JWT signature verification, Azure Functions binding i
 
 Terraform CI runs formatting, provider initialization with the checked-in lock file, validation and 18 mock plans. These inspect private networking, identity access, protected state, queue poison handling, retention, quotas, alerts and invalid settings. A build check imports each role from the staged production artifact.
 
+## Live acceptance required
+
+From a private Azure runner: deploy to a disposable environment; verify Entra token rejection/acceptance, API ownership, duplicate key response, quota limits, one word-count job, output integrity, stdout/stderr/exit retrieval, cancellation, worker restarts, a simulated lost gateway response, timer recovery and operator alerts. Confirm HTTP error envelopes and userargs fields match the deployed HDInsight WebHCat version. Verify application permissions and network access with a denied principal too.
+
