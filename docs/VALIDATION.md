@@ -10,3 +10,6 @@ Terraform CI runs formatting, provider initialization with the checked-in lock f
 
 From a private Azure runner: deploy to a disposable environment; verify Entra token rejection/acceptance, API ownership, duplicate key response, quota limits, one word-count job, output integrity, stdout/stderr/exit retrieval, cancellation, worker restarts, a simulated lost gateway response, timer recovery and operator alerts. Confirm HTTP error envelopes and userargs fields match the deployed HDInsight WebHCat version. Verify application permissions and network access with a denied principal too.
 
+## Evidence boundary
+
+CI validates source and infrastructure contracts. It does not prove Azure region capacity, RBAC propagation, DNS, cluster gateway compatibility or successful live job execution. No subscription resources or Hadoop jobs are created during repository validation. Versions are pinned as of reconstruction, not the historical commit dates in NOTICE.
