@@ -9,7 +9,7 @@ resource "azurerm_storage_account" "host" {
   shared_access_key_enabled       = false
   default_to_oauth_authentication = true
   allow_nested_items_to_be_public = false
-  public_network_access_enabled   = false
+  public_network_access           = "Disabled"
   tags                            = local.tags
   blob_properties {
     versioning_enabled = true
@@ -27,7 +27,7 @@ resource "azurerm_storage_account" "queue" {
   shared_access_key_enabled       = false
   default_to_oauth_authentication = true
   allow_nested_items_to_be_public = false
-  public_network_access_enabled   = false
+  public_network_access           = "Disabled"
   tags                            = local.tags
 }
 resource "azurerm_storage_container" "deployment" {
@@ -38,8 +38,8 @@ resource "azurerm_storage_container" "deployment" {
   depends_on            = [azurerm_private_endpoint.storage]
 }
 resource "azurerm_storage_queue" "jobs" {
-  for_each             = toset(["jobs", "jobs-poison"])
-  name                 = each.key
-  storage_account_name = azurerm_storage_account.queue.name
-  depends_on           = [azurerm_private_endpoint.storage]
+  for_each           = toset(["jobs", "jobs-poison"])
+  name               = each.key
+  storage_account_id = azurerm_storage_account.queue.id
+  depends_on         = [azurerm_private_endpoint.storage]
 }
