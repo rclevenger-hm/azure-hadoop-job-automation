@@ -5,7 +5,7 @@ resource "azurerm_cosmosdb_account" "state" {
   offer_type                    = "Standard"
   kind                          = "GlobalDocumentDB"
   public_network_access_enabled = false
-  local_authentication_disabled = true
+  local_authentication_enabled  = false
   minimal_tls_version           = "Tls12"
   consistency_policy { consistency_level = "Session" }
   geo_location {

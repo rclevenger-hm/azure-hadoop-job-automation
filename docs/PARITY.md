@@ -1,6 +1,6 @@
 # Capability comparison
 
-Reference snapshots inspected on 2026-10-07: [OCI](https://github.com/rclevenger-hm/oci-hadoop-job-automation), [AWS](https://github.com/rclevenger-hm/aws-hadoop-job-automation) at `63b7daf05cd453cb9d800b092453f17eb7fc03fd`, and [GCP](https://github.com/rclevenger-hm/gcp-hadoop-job-automation) at `a95e3fa4597aadd8ad1e6d3e434c6d1c4af2e990`.
+Reference snapshots inspected on 2026-10-07: [OCI](https://github.com/rclevenger-hm/oci-hadoop-job-automation) at `af9ac91b845aa1b8b709d1fdf74b58dc3cdeadde`, [AWS](https://github.com/rclevenger-hm/aws-hadoop-job-automation) at `63b7daf05cd453cb9d800b092453f17eb7fc03fd`, and [GCP](https://github.com/rclevenger-hm/gcp-hadoop-job-automation) at `a95e3fa4597aadd8ad1e6d3e434c6d1c4af2e990`.
 
 | Capability | OCI baseline | AWS / GCP | Azure implementation |
 |---|---|---|---|
