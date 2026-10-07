@@ -1,0 +1,353 @@
+openapi: 3.1.0
+info:
+  title: Azure Hadoop Job Automation
+  version: 1.0.0
+  description: Private Entra-authenticated HDInsight MapReduce control plane.
+security:
+- entra: []
+paths:
+  /jobs:
+    post:
+      operationId: submitJob
+      summary: Admit an asynchronous Hadoop JAR job
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9._:-]{8,128}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+      responses:
+        '202':
+          description: New admission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '200':
+          description: Identical replay
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400': &id001
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': &id002
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403': &id003
+          description: Profile or path not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404': &id004
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409': &id005
+          description: Conflict or log not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413': &id006
+          description: Body exceeds 64 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415': &id007
+          description: Expected application/json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429': &id008
+          description: Rate or daily quota exceeded; Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503': &id009
+          description: Temporary dependency failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      operationId: listJobs
+      summary: List this caller’s retained jobs newest first
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        description: Page size
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          maxLength: 2048
+        description: Opaque cursor bound to caller and status
+      - name: status
+        in: query
+        schema:
+          type: string
+        description: Optional exact job state
+      responses:
+        '200':
+          description: Job history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Job'
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '413': *id006
+        '415': *id007
+        '429': *id008
+        '503': *id009
+  /jobs/{job_id}:
+    parameters: &id010
+    - name: job_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^[a-f0-9]{64}$
+    get:
+      operationId: getJob
+      responses:
+        '200':
+          description: Persisted status; refresh occurs asynchronously
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '413': *id006
+        '415': *id007
+        '429': *id008
+        '503': *id009
+  /jobs/{job_id}/cancel:
+    parameters: *id010
+    post:
+      operationId: cancelJob
+      responses:
+        '200':
+          description: Cancelled before dispatch or repeated request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '202':
+          description: Cancellation requested, not confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '413': *id006
+        '415': *id007
+        '429': *id008
+        '503': *id009
+  /jobs/{job_id}/logs:
+    parameters: *id010
+    get:
+      operationId: getLogs
+      parameters:
+      - name: stream
+        in: query
+        schema:
+          type: string
+          enum:
+          - stdout
+          - stderr
+          - exit
+          default: stdout
+        description: WebHCat launcher status file
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 65536
+          default: 16384
+        description: Maximum bytes returned from start of file
+      responses:
+        '200':
+          description: Bounded launcher log
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                  text:
+                    type: string
+                  truncated:
+                    type: boolean
+                  limit_bytes:
+                    type: integer
+                  note:
+                    type: string
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '413': *id006
+        '415': *id007
+        '429': *id008
+        '503': *id009
+  /usage:
+    get:
+      operationId: getUsage
+      responses:
+        '200':
+          description: Current UTC-day admission count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  jobs:
+                    type: integer
+                  limit:
+                    type: integer
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '413': *id006
+        '415': *id007
+        '429': *id008
+        '503': *id009
+components:
+  securitySchemes:
+    entra:
+      type: http
+      scheme: bearer
+      bearerFormat: Microsoft Entra v2 JWT
+  schemas:
+    JobRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - profile
+      - jar_path
+      - job_class
+      - input_path
+      - output_path
+      properties:
+        profile:
+          type: string
+        jar_path:
+          type: string
+        job_class:
+          type: string
+        input_path:
+          type: string
+        output_path:
+          type: string
+        arguments:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 1024
+          default: []
+    Job:
+      type: object
+      required:
+      - job_id
+      - profile
+      - status
+      - created_at
+      - updated_at
+      properties:
+        job_id:
+          type: string
+        profile:
+          type: string
+        status:
+          type: string
+          enum:
+          - QUEUED
+          - SUBMITTING
+          - SUBMISSION_UNKNOWN
+          - SUBMITTED
+          - RUNNING
+          - CANCEL_REQUESTED
+          - SUCCEEDED
+          - FAILED
+          - CANCELLED
+          - NEEDS_REVIEW
+        created_at:
+          type: integer
+          description: Unix UTC seconds
+        updated_at:
+          type: integer
+        remote_id:
+          type: string
+        cancel_requested:
+          type: boolean
+        cancel_accepted:
+          type: boolean
+        reason:
+          type: string
+        expires_at:
+          type: integer
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        error:
+          type: string
+        request_id:
+          type: string

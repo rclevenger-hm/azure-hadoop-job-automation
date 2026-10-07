@@ -1,0 +1,17 @@
+[project]
+name = "azure-hadoop-job-automation"
+version = "1.0.0"
+description = "Durable Hadoop MapReduce jobs on Azure HDInsight"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 180
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

@@ -1,0 +1,12 @@
+This repository includes an Azure adaptation of the request contract and durable
+job orchestration in rclevenger-hm's OCI, AWS and GCP Hadoop automation projects.
+The original MIT license is retained in LICENSE.
+
+History provenance
+------------------
+The January 1–September 30, 2026 commit dates are a retrospective reconstruction
+created on October 7, 2026, at the repository owner's request. They organize real,
+nonempty source, infrastructure, test and documentation changes with varied daily
+frequency in America/Chicago time. They are not a contemporaneous record of work
+on those dates. Dependency and service versions reflect the reconstruction date.
+Publication, validation and integration commits retain their actual timestamps.

@@ -1,0 +1,8 @@
+{
+  "profile": "analytics",
+  "jar_path": "abfss://jobs@yourstorage.dfs.core.windows.net/jars/wordcount.jar",
+  "job_class": "com.example.WordCount",
+  "input_path": "abfss://jobs@yourstorage.dfs.core.windows.net/input/words.txt",
+  "output_path": "abfss://jobs@yourstorage.dfs.core.windows.net/output/unique-run-001",
+  "arguments": []
+}

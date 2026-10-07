@@ -1,0 +1,31 @@
+terraform {
+  required_version = ">= 1.12, < 2.0"
+  backend "azurerm" { use_azuread_auth = true }
+  required_providers {
+    azurerm = { source = "hashicorp/azurerm", version = "~> 5.8.0" }
+    random  = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+provider "azurerm" {
+  features {
+    resource_group { prevent_deletion_if_contains_resources = true }
+  }
+  subscription_id                 = var.subscription_id
+  storage_use_azuread             = true
+  resource_provider_registrations = "none"
+}
+data "azurerm_client_config" "current" {}
+resource "random_id" "suffix" { byte_length = 4 }
+resource "azurerm_resource_group" "service" {
+  name     = "${var.name}-rg"
+  location = var.location
+  tags     = local.tags
+  lifecycle { prevent_destroy = true }
+}
+locals {
+  roles         = toset(["api", "worker"])
+  suffix        = random_id.suffix.hex
+  tags          = { service = "azure-hadoop-job-automation", environment = var.environment, managed_by = "terraform" }
+  callers       = distinct(flatten([for p in values(var.profiles) : p.allowed_callers]))
+  secret_scopes = toset([for p in values(var.profiles) : replace(p.secret_resource_id, "/versions/[^/]+$/", "")])
+}
