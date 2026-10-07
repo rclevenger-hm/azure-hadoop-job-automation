@@ -32,7 +32,7 @@ jobs:
           cd build/function
           APP_ROLE=api "$RUNNER_TEMP/production/bin/python" -c "import function_app; assert len(function_app.app.get_functions()) == 1"
           APP_ROLE=worker "$RUNNER_TEMP/production/bin/python" -c "import function_app; assert len(function_app.app.get_functions()) == 2"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: azure-function-source
           path: build/
