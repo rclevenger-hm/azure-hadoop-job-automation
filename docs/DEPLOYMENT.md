@@ -37,7 +37,7 @@ Build with `python scripts/build.py`. The explicit source directory `build/funct
 
 ## GitHub OIDC workflow
 
-Create a protected GitHub environment named `azure`, configure required reviewers, and allow only main. Register an Azure federated identity for `repo:rclevenger-hm/azure-hadoop-job-automation:environment:azure`. Install a private, dedicated Linux runner with label `azure-private`; do not run untrusted fork PRs on it.
+Create a protected GitHub environment named `azure`, configure required reviewers, and allow only main. Register an Azure federated identity for `repo:rclevenger-hm/azure-hadoop-job-automation:environment:azure`. Install a private, dedicated Linux runner with label `azure-private`; do not run untrusted fork PRs on it. Use Actions Runner **2.327.1 or newer**: the updated checkout, Python, Terraform and Azure login actions run on Node.js 24. Keep this runner updated before dispatching deployment. If you later use authenticated Git commands inside Docker container actions, checkout requires Runner **2.329.0 or newer**. See the [checkout compatibility notes](https://github.com/actions/checkout/tree/v7#whats-new).
 
 Set environment variables AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, TF_VARS_JSON (the nonsecret reviewed Terraform variables as JSON), and TF_BACKEND_HCL (remote backend configuration). Do not store cluster passwords in those variables. Run **Deploy Azure** manually from main. The workflow reruns source checks, plans/applies infrastructure, and uses Azure/functions-action with OIDC and Flex remote build. No deployment workflow runs on push.
 
