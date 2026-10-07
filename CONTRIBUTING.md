@@ -10,4 +10,4 @@ Preserve one-POST dispatch, atomic quota admission, caller ownership, conditiona
 
 ## Dependencies
 
-Update requirements.in, then regenerate requirements.txt and requirements-dev.txt using pip-compile --generate-hashes --strip-extras. Review the audit and production artifact import. Terraform providers remain constrained and locked; update deliberately.
+Update requirements.in, then regenerate requirements.txt and requirements-dev.txt using pip-compile --generate-hashes --allow-unsafe --strip-extras. Review the audit and production artifact import. Terraform providers remain constrained and locked; update deliberately.
