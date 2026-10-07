@@ -74,7 +74,7 @@ run "bounded_scaling" {
 run "keyless_private_storage" {
   command = plan
   assert {
-    condition     = alltrue([for a in values(azurerm_storage_account.host) : !a.shared_access_key_enabled && !a.public_network_access_enabled && !a.allow_nested_items_to_be_public]) && !azurerm_storage_account.queue.shared_access_key_enabled
+    condition     = alltrue([for a in values(azurerm_storage_account.host) : !a.shared_access_key_enabled && a.public_network_access == "Disabled" && !a.allow_nested_items_to_be_public]) && !azurerm_storage_account.queue.shared_access_key_enabled
     error_message = "Contract failed: keyless_private_storage."
   }
 }
@@ -90,7 +90,7 @@ run "partitioned_state" {
 run "private_keyless_cosmos" {
   command = plan
   assert {
-    condition     = !azurerm_cosmosdb_account.state.public_network_access_enabled && azurerm_cosmosdb_account.state.local_authentication_disabled
+    condition     = !azurerm_cosmosdb_account.state.public_network_access_enabled && !azurerm_cosmosdb_account.state.local_authentication_enabled
     error_message = "Contract failed: private_keyless_cosmos."
   }
 }
