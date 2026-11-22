@@ -1,5 +1,5 @@
 azure-functions>=1.24,<2
-azure-identity>=1.25,<2
+azure-identity>=1.27.0,<2
 azure-cosmos>=4.14,<5
 azure-storage-queue>=12.14,<13
 azure-storage-blob>=12.27,<13
