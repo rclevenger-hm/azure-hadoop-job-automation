@@ -25,9 +25,9 @@ azure-identity==1.26.0 \
     --hash=sha256:3c60d9682b3ac01507388d474cb5a5ffbe54152a96b6cdcaa7013da9315cf186 \
     --hash=sha256:61b4538b87df10d2d6d44b77cd5ea28a8929fd4929d58b45bf3f230f7daba02e
     # via -r requirements.in
-azure-keyvault-secrets==4.11.3 \
-    --hash=sha256:193ba3cf9912ae776fb1ba40d147aa3cbfcf5cda5e0e2e35ef8fbe4c78db1217 \
-    --hash=sha256:c77cc80f33d07e1b8cbbda5e7b6b8a1da1471ca917796f9895603a0c2b5f9c2f
+azure-keyvault-secrets==4.12.0 \
+    --hash=sha256:435ea0abb5280baaad9553da7a19e73e1b581048783b852210352bfcb0316aff \
+    --hash=sha256:ec5ff84ee0a045094e62d38e9b962769003e60fe7396d8dcf1ac4c78e7d010c6
     # via -r requirements.in
 azure-storage-blob==12.31.0 \
     --hash=sha256:0c0cb601d3462491d09ea96023cd791bb9dd4b173bf950daf3cff34ff47ba5b5 \
